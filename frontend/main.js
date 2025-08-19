@@ -10,7 +10,7 @@ app.on('ready', () => {
     mainWindow = new BrowserWindow({
         width: 800, // Define largura da janela
         height: 800, // Define altura da janela
-        resizable: false // Habilita ou desabilita o ajuste de tamanho da janela
+        resizable: true // Habilita ou desabilita o ajuste de tamanho da janela
     }); 
 
     mainWindow.loadURL(`file://${__dirname}/index.html`);
