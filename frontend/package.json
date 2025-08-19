@@ -1,0 +1,24 @@
+{
+  "name": "projeto-nutricionista",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "dev": "electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arturBenedetti/projeto-nutricionista.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/arturBenedetti/projeto-nutricionista/issues"
+  },
+  "homepage": "https://github.com/arturBenedetti/projeto-nutricionista#readme",
+  "devDependencies": {
+    "electron": "^37.3.1",
+    "electron-reload": "^2.0.0-alpha.1"
+  }
+}
