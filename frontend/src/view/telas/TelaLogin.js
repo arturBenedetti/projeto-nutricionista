@@ -1,7 +1,7 @@
 define([], function () {
     return function () {
         const alertHTML = `
-            <div class="ui middle aligned center aligned grid" id="telaLogin" style="height: 100vh;">
+            <div class="ui middle aligned center aligned grid" id="telaLogin">
                 <div class="column" style="max-width: 450px;">
                     <h2 class="ui teal image header">
                         <div class="content">

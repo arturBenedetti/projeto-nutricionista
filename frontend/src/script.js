@@ -1,7 +1,7 @@
 function executaAplicacao() {
     require(['src/controller/ViewController'], function (ViewController) {
 
-        ViewController.TelaLogin();
+        //ViewController.TelaLogin();
 
         window.buttonClick = function () {
             ViewController.Alert("Erro", "Teste", 'error');
