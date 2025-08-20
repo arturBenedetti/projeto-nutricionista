@@ -1,8 +1,8 @@
-define(['libs/jquery', 'libs/semantic.min'], function (jquery, semantic) {
+define([], function () {
     return function () {
         const alertHTML = `
-            <div class="ui middle aligned center aligned grid" id="telaLogin">
-                <div class="column">
+            <div class="ui middle aligned center aligned grid" id="telaLogin" style="height: 100vh;">
+                <div class="column" style="max-width: 450px;">
                     <h2 class="ui teal image header">
                         <div class="content">
                             Conecte-se na sua conta
@@ -22,38 +22,15 @@ define(['libs/jquery', 'libs/semantic.min'], function (jquery, semantic) {
                                     <input type="password" name="password" placeholder="Senha">
                                 </div>
                             </div>
-                            <div class="ui fluid large teal submit button">Login</div>
+                            <button class="ui fluid large teal submit button" type="submit">Login</button>
                         </div>
-
-                        <div class="ui error message"></div>
-
                     </form>
-
                     <div class="ui message">
-                        Não esta cadastrado? <a href="#">Cadastre-se</a>
+                        Não está cadastrado? <a href="#">Cadastre-se</a>
                     </div>
                 </div>
             </div>
-            `;
-
+        `;
         document.body.insertAdjacentHTML('beforeend', alertHTML);
-
-        // timeout para evitar alguns bugs
-        setTimeout(() => {
-            $('#telaLogin').modal({
-
-                duration: 300, // duracao das animacoes de abertura e fechamento do modal, em ms
-                closable: false, // desabilita fechar clicando fora
-                allowMultiple: true, // permite multiplos modais abertos
-
-                onHidden: function () {
-                    document.getElementById('telaLogin')?.remove(); // remove o HTML da DOM quando fechado
-                }
-
-            }).modal('show');
-
-        }, 300);
-
     }
-
 });
