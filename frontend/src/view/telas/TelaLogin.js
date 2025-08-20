@@ -24,9 +24,6 @@ define(['libs/jquery', 'libs/semantic.min'], function (jquery, semantic) {
                             </div>
                             <div class="ui fluid large teal submit button">Login</div>
                         </div>
-
-                        <div class="ui error message"></div>
-
                     </form>
 
                     <div class="ui message">
@@ -37,22 +34,6 @@ define(['libs/jquery', 'libs/semantic.min'], function (jquery, semantic) {
             `;
 
         document.body.insertAdjacentHTML('beforeend', alertHTML);
-
-        // timeout para evitar alguns bugs
-        setTimeout(() => {
-            $('#telaLogin').modal({
-
-                duration: 300, // duracao das animacoes de abertura e fechamento do modal, em ms
-                closable: false, // desabilita fechar clicando fora
-                allowMultiple: true, // permite multiplos modais abertos
-
-                onHidden: function () {
-                    document.getElementById('telaLogin')?.remove(); // remove o HTML da DOM quando fechado
-                }
-
-            }).modal('show');
-
-        }, 300);
 
     }
 
