@@ -1,4 +1,4 @@
-define(['libs/jquery', 'libs/semantic.min'], function (jquery, semantic) {
+define([/* 'libs/jquery', 'libs/semantic.min' */], function (/* jquery, semantic */) {
 
     /**
     ######## types para o modal ########

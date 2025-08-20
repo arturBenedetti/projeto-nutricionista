@@ -1,4 +1,4 @@
-define(['libs/jquery', 'libs/semantic.min'], function (jquery, semantic) {
+define([/* 'libs/jquery', 'libs/semantic.min' */], function (/* jquery, semantic */) {
     return function () {
         const alertHTML = `
             <div class="ui middle aligned center aligned grid" id="telaLogin">
