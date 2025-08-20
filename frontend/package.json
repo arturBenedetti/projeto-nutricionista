@@ -20,5 +20,8 @@
   "devDependencies": {
     "electron": "^37.3.1",
     "electron-reload": "^2.0.0-alpha.1"
+  },
+  "dependencies": {
+    "fomantic-ui": "^2.9.4"
   }
 }
