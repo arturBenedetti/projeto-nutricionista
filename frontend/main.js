@@ -1,18 +1,30 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow } = require("electron");
+const { java, importClass } = require("java-bridge")
 
-// Ao salvar, atualiza a página sem precisar rodar o código de inicialização novamente
-require('electron-reload')(__dirname, { electron: require(`${__dirname}/node_modules/electron`) });
+const UserService = importClass("Main");
 
-let mainWindow;
+async function getUser(){
+  console.log("\n ------------------------------------------------------------ \n Aqui")
+  const user = await UserService.getUserById("123");
+  console.log("Resposta do Java:", user);
+}
 
-app.on('ready', () => {
+function createWindow() {
+  const win = new BrowserWindow({
+    width: 800,
+    height: 600,
+    webPreferences: {
+      nodeIntegration: true,
+    },
+  });
 
-    mainWindow = new BrowserWindow({
-        width: 800, // Define largura da janela
-        height: 800, // Define altura da janela
-        resizable: true // Habilita ou desabilita o ajuste de tamanho da janela
-    }); 
+  win.loadFile("index.html");
 
-    mainWindow.loadURL(`file://${__dirname}/index.html`);
+  getUser();
+}
 
+app.whenReady().then(createWindow);
+
+app.on("window-all-closed", () => {
+  app.quit();
 });
