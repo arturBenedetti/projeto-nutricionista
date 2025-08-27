@@ -1,4 +1,12 @@
-define([], function () {
+define(['src/service/LoginService'], function (LoginService) {
+    window.efetuaLogin = function () {
+        if (LoginService.validaLogin()) {
+            alert("Login efetuado com sucesso!");
+        } else {
+            alert("Falha no login. Verifique suas credenciais.");
+        }
+    }
+
     return function () {
         const alertHTML = `
             <div class="ui middle aligned center aligned grid" id="telaLogin">
@@ -22,7 +30,7 @@ define([], function () {
                                     <input type="password" name="password" placeholder="Senha">
                                 </div>
                             </div>
-                            <button class="ui fluid large teal submit button" type="submit">Login</button>
+                            <button class="ui fluid large teal submit button" type="submit" onclick="efetuaLogin()">Login</button>
                         </div>
                     </form>
                     <div class="ui message">
