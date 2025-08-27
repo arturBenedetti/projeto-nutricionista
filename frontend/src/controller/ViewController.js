@@ -1,12 +1,9 @@
-define([
-    'src/view/modais/Alert',
-    'src/view/telas/TelaLogin',
-], function (
-    ModalAlert,
-    TelaLogin,
-) {
-    return {
-        Alert: ModalAlert.modalAlert,
-        TelaLogin: TelaLogin,
-    };
-});
+import ModalAlert from './modais/Alert.js';
+import TelaLogin from './telas/TelaLogin.js';
+
+const ViewController = {
+    Alert: ModalAlert.modalAlert,
+    TelaLogin: TelaLogin,
+};
+
+export default ViewController;

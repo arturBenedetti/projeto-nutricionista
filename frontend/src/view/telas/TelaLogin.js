@@ -1,14 +1,15 @@
-define(['src/service/LoginService'], function (LoginService) {
-    window.efetuaLogin = function () {
-        if (LoginService.validaLogin()) {
-            alert("Login efetuado com sucesso!");
-        } else {
-            alert("Falha no login. Verifique suas credenciais.");
-        }
-    }
+import LoginService from '../../service/LoginService.js';
 
-    return function () {
-        const alertHTML = `
+window.efetuaLogin = function () {
+    if (LoginService.validaLogin()) {
+        alert("Login efetuado com sucesso!");
+    } else {
+        alert("Falha no login. Verifique suas credenciais.");
+    }
+}
+
+return function () {
+    const alertHTML = `
             <div class="ui middle aligned center aligned grid" id="telaLogin">
                 <div class="column" style="max-width: 450px;">
                     <h2 class="ui teal image header">
@@ -39,6 +40,5 @@ define(['src/service/LoginService'], function (LoginService) {
                 </div>
             </div>
         `;
-        document.body.insertAdjacentHTML('beforeend', alertHTML);
-    }
-});
+    document.body.insertAdjacentHTML('beforeend', alertHTML);
+}
