@@ -1,10 +1,11 @@
+import { ViewController } from '../../controller/ViewController.js';
 import LoginService from '../../service/LoginService.js';
 
 window.efetuaLogin = function () {
     if (LoginService.validaLogin()) {
-        alert("Login efetuado com sucesso!");
+        ViewController.Alert("Sucesso", "Login efetuado com sucesso!", 'success');
     } else {
-        alert("Falha no login. Verifique suas credenciais.");
+        ViewController.Alert("Erro", "Falha ao efetuar login. Verifique suas credenciais.", 'error');
     }
 }
 
@@ -31,7 +32,7 @@ export default function () {
                                     <input type="password" name="password" placeholder="Senha">
                                 </div>
                             </div>
-                            <button class="ui fluid large teal submit button" type="submit" onclick="efetuaLogin()">Login</button>
+                            <button class="ui fluid large teal submit button" type="button" onclick="efetuaLogin()">Login</button>
                         </div>
                     </form>
                     <div class="ui message">

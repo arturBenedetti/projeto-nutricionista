@@ -1,7 +1,7 @@
 class LoginService {
 
     static validaLogin() {
-        return true;
+        return true; // simulação de login bem-sucedido
     }
     
 }
