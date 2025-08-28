@@ -8,7 +8,7 @@ window.efetuaLogin = function () {
     }
 }
 
-return function () {
+export default function () {
     const alertHTML = `
             <div class="ui middle aligned center aligned grid" id="telaLogin">
                 <div class="column" style="max-width: 450px;">

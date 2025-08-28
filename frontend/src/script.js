@@ -1,7 +1,5 @@
 import { ViewController } from "./controller/ViewController.js";
 
-ViewController.TelaLogin();
-
-window.buttonClick = function () {
-    ViewController.Alert("Erro", "Teste", 'error');
-}
+document.getElementById('buttonClick').addEventListener('click', function() {
+    console.log('Botão clicado');
+})

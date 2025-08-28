@@ -83,4 +83,4 @@ function openModal(textoCabecalho, mensagem, tipo, modalId) {
 
 }
 
-return { modalAlert };
+export default { modalAlert };
