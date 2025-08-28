@@ -1,11 +1,7 @@
+import { ViewController } from "./controller/ViewController.js";
+
+executaAplicacao();
+
 function executaAplicacao() {
-    require(['src/controller/ViewController'], function (ViewController) {
-
-        ViewController.TelaLogin();
-
-        window.buttonClick = function () {
-            ViewController.Alert("Erro", "Teste", 'error');
-        }
-        
-    });
+    ViewController.TelaLogin();
 }
