@@ -1,5 +1,6 @@
 <template>
   <div class="container">
+    <img src="../../assets/caduceu.png"></img>
     <p v-if="false" class="senha-invalida">Usuário ou senha inválidos</p>
     <div class="forms-login">
       <div class="input-wrapper">
@@ -44,6 +45,11 @@ export default {
   transform: translate(-50%, -50%);
   width: 100%;
   height: 100vh;
+}
+
+img {
+  width: 200px;
+  height: 200px;
 }
 
 .forms-login {
