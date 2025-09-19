@@ -1,10 +1,9 @@
 <template>
-  <TelaCadastro />
+  <TelaLogin />
 </template>
 
 <script setup lang="ts">
 import TelaLogin from './view/telas/TelaLogin.vue';
-import TelaCadastro from './view/telas/TelaCadastro.vue';
 </script>
 
 <style scoped>
