@@ -1,13 +1,20 @@
 {
-  "name": "electron-app",
+  "name": "projeto-nutricionista",
+  "version": "0.0.0",
+  "description": "Projeto Tematico II - Nutricionista",
   "main": "main.cjs",
   "scripts": {
-    "start": "electron ."
+    "build": "cd ../backend && tsc",
+    "start": "npm run build && electron .",
+    "dev": "tsc --watch"
   },
   "devDependencies": {
-    "electron": "^38.1.0"
+    "electron": "^38.1.0",
+    "@types/node": "^20.12.12",
+    "typescript": "^5.6.3"
   },
   "dependencies": {
-    "electron-reload": "^2.0.0-alpha.1"
+    "electron-reload": "^2.0.0-alpha.1",
+    "mongodb": "^6.7.0"
   }
 }
