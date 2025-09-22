@@ -5,10 +5,10 @@ let db: Db;
 
 export async function connectMongo(): Promise<Db> {
   if (!db) {
-    const client = new MongoClient(config.mongoUri);
+    const client = new MongoClient(config.MONGO_URI);
     await client.connect();
     await client.db("admin").command({ ping: 1 });
-    db = client.db(config.dbName);
+    db = client.db(config.DB_NAME);
   }
   return db;
 }
