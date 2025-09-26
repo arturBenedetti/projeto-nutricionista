@@ -6,7 +6,13 @@ export class CreateUserUseCase {
   constructor(private userRepo: IUserRepository) {}
 
   async execute(data: CreateUserDTO): Promise<User> {
-    const user = new User(Date.now().toString(), data.name, data.email);
-    return await this.userRepo.save(user);
+    const newUser = new User(
+      Date.now().toString(),
+      data.name,
+      data.email,
+      data.user,
+      data.password
+    );
+    return await this.userRepo.save(newUser);
   }
 }
