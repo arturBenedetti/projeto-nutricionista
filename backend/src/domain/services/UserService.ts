@@ -4,9 +4,20 @@ import { IUserRepository } from "../../application/interfaces/IUserRepository.js
 export class UserService {
   constructor(private userRepo: IUserRepository) {}
 
-  async createUser(name: string, email: string): Promise<User> {
-    const user = new User(Date.now().toString(), name, email);
-    return await this.userRepo.save(user);
+  async createUser(
+    name: string,
+    email: string,
+    user: string,
+    password: string
+  ): Promise<User> {
+    const newUser = new User(
+      Date.now().toString(),
+      name,
+      email,
+      user,
+      password
+    );
+    return await this.userRepo.save(newUser);
   }
 
   async getAllUsers(): Promise<User[]> {

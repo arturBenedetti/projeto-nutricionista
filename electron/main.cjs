@@ -23,6 +23,8 @@ async function createWindow() {
     resizable: true,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
+      contextIsolation: true,
+      nodeIntegration: false,
     },
   });
 
