@@ -2,6 +2,7 @@ const { app, BrowserWindow } = require("electron");
 const path = require("path");
 
 const { connectMongo } = require("../backend/dist/infrastructure/db/mongo");
+
 const {
   UserRepository,
 } = require("../backend/dist/infrastructure/repositories/UserRepository");
@@ -9,6 +10,14 @@ const {
   UserController,
 } = require("../backend/dist/application/controllers/UserController");
 const { registerUserIPC } = require("../backend/dist/application/ipc/UserIPC");
+
+const {
+  LoginRepository,
+} = require("../backend/dist/infrastructure/repositories/LoginRepository");
+const {
+  LoginController,
+} = require("../backend/dist/application/controllers/LoginController");
+const { loginIPC } = require("../backend/dist/application/ipc/LoginIPC");
 
 require("electron-reload")(__dirname, {
   electron: require(`${__dirname}/node_modules/electron`),
@@ -30,11 +39,17 @@ async function createWindow() {
 
   // Configura backend
   const db = await connectMongo();
+
   const userRepo = new UserRepository(db);
   const userController = new UserController(userRepo);
 
+  const loginRepo = new LoginRepository(db);
+  const loginController = new LoginController(loginRepo);
+
   // Registra IPCs
   registerUserIPC(userController);
+  loginIPC(loginController);
+
   mainWindow.loadURL("http://localhost:5173");
 }
 
