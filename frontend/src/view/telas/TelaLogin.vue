@@ -1,39 +1,66 @@
 <template>
   <div class="container">
-    <img src="../../assets/caduceu.png"></img>
+    <img src="../../assets/caduceu.png" />
     <p v-if="false" class="senha-invalida">Usuário ou senha inválidos</p>
     <div class="forms-login">
       <div class="input-wrapper">
-        <Input :value="usuario" placeholder="Digite seu usuário" @update:value="usuario = $event" :disabled="false" />
+        <Input
+          :value="usuario"
+          placeholder="Digite seu usuário"
+          @update:value="usuario = $event"
+          :disabled="false"
+        />
       </div>
       <div class="input-wrapper">
-        <Input :value="senha" placeholder="Digite sua senha" @update:value="senha = $event" :disabled="false" />
+        <Input
+          :value="senha"
+          placeholder="Digite sua senha"
+          @update:value="senha = $event"
+          :disabled="false"
+        />
       </div>
-      <p>Não possui uma conta? <span>Cadastre-se</span></p>
+      <p>Não possui uma conta? <span @click="navigateToCadastro" class="cadastre-link">Cadastre-se</span></p>
     </div>
-    <Button label="Entrar" :color="'teal'" :size="'medium'" :disabled="false" @click="handleSave" />
+    <Button
+      label="Entrar"
+      :color="'teal'"
+      :size="'medium'"
+      :disabled="false"
+      @click="handleSave"
+    />
   </div>
 </template>
 
 <script>
-import Button from '../../components/buttons/Button.vue';
-import Input from '../../components/inputs/Input.vue';
+import Button from "../../components/buttons/Button.vue";
+import Input from "../../components/inputs/Input.vue";
 
 export default {
   components: {
     Button,
     Input,
   },
+  data() {
+    return {
+      usuario: '',
+      senha: ''
+    };
+  },
   methods: {
     handleSave() {
-      console.log('Botão clicado');
+      window.api.login({
+        user: this.usuario,
+        password: this.senha,
+      });
     },
+    navigateToCadastro() {
+      this.$emit('navigate-to-cadastro');
+    }
   },
 };
 </script>
 
 <style scoped>
-
 .container {
   display: flex;
   flex-direction: column;
@@ -61,12 +88,20 @@ img {
 }
 
 .forms-login span {
-    color: #00B5AD;
+  color: #00b5ad;
+}
+
+.cadastre-link {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.cadastre-link:hover {
+  color: #008a82;
 }
 
 .senha-invalida {
-    color: red;
-    margin: 2px;
+  color: red;
+  margin: 2px;
 }
-
 </style>
