@@ -1,15 +1,15 @@
-<template>
+﻿<template>
   <div class="register-form">
     <h2>Cadastro de Conta</h2>
     <div class="linha-input">
-      <Input
+      <input
         label="Nome Completo"
         placeholder="Digite seu nome"
         v-model="form.name"
       />
     </div>
     <div class="linha-input">
-      <Input
+      <input
         label="Email"
         type="email"
         placeholder="Digite seu email"
@@ -17,7 +17,7 @@
       />
     </div>
     <div class="linha-input">
-      <Input
+      <input
         label="Usuário"
         type="user"
         placeholder="Escolha um usuário"
@@ -25,7 +25,7 @@
       />
     </div>
     <div class="linha-input">
-      <Input
+      <input
         label="Senha"
         type="password"
         placeholder="Digite sua senha"
@@ -33,16 +33,20 @@
       />
     </div>
     <div class="linha-input">
-      <Input
+      <input
         label="Confirmar Senha"
         type="password"
         placeholder="Confirme sua senha"
         v-model="form.confirmPassword"
       />
     </div>
-    <Button label="Cadastrar" :color="'teal'" @click="submitForm" />
+    <button label="Cadastrar" @click="submitForm">Cadastrar</button>
     <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
     <p v-if="successMessage" class="success">{{ successMessage }}</p>
+    <p class="login-link">
+      Já possui uma conta?
+      <span @click="navigateToLogin" class="login-link-text">Faça login</span>
+    </p>
   </div>
 </template>
 
@@ -108,6 +112,9 @@ export default {
           this.successMessage = "";
         });
     },
+    navigateToLogin() {
+      this.$emit("navigate-to-login");
+    },
   },
 };
 </script>
@@ -139,5 +146,21 @@ h2 {
 .success {
   color: green;
   margin-top: 10px;
+}
+
+.login-link {
+  text-align: center;
+  margin-top: 15px;
+  color: #666;
+}
+
+.login-link-text {
+  color: #00b5ad;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.login-link-text:hover {
+  color: #008a82;
 }
 </style>

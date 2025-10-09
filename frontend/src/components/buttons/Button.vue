@@ -1,28 +1,24 @@
 <template>
-  <button
-    :class="buttonClass"
-    :style="buttonStyle"
-    @click="handleClick"
-  >
+  <button :class="buttonClass" :style="buttonStyle">
     <slot>{{ label }}</slot>
   </button>
 </template>
 
 <script>
 export default {
-  name: 'Button',
+  name: "Button",
   props: {
     label: {
       type: String,
-      default: 'Clique aqui',
+      default: "Clique aqui",
     },
     color: {
       type: String,
-      default: 'blue',
+      default: "blue",
     },
     size: {
       type: String,
-      default: 'medium', 
+      default: "medium",
     },
     disabled: {
       type: Boolean,
@@ -30,36 +26,35 @@ export default {
     },
     buttonClass: {
       type: String,
-      default: '', 
+      default: "",
     },
     buttonStyle: {
       type: Object,
-      default: () => ({})
+      default: () => ({}),
     },
   },
   computed: {
     buttonClass() {
       return {
-        'btn': true,
+        btn: true,
         [`btn-${this.size}`]: true,
         [`btn-${this.color}`]: true,
-        'btn-disabled': this.disabled,
+        "btn-disabled": this.disabled,
         [this.buttonClass]: this.buttonClass,
       };
-    }
+    },
   },
   methods: {
     handleClick() {
       if (!this.disabled) {
-        this.$emit('click');
+        this.$emit("click");
       }
-    }
+    },
   },
 };
 </script>
 
 <style scoped>
-
 .btn {
   padding: 10px;
   border: none;
@@ -86,12 +81,11 @@ export default {
   color: white;
 }
 .btn-teal {
-  background-color: #00B5AD;
+  background-color: #00b5ad;
   color: white;
 }
 .btn-disabled {
   background-color: grey;
   cursor: not-allowed;
 }
-
 </style>
