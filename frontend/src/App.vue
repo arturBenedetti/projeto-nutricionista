@@ -1,24 +1,19 @@
 ﻿<template>
-  <div>
+  <router-view />
+  <!-- <div>
     <TelaLogin v-if="currentScreen === 'login'" @navigate-to-cadastro="navigateToCadastro" />
     <TelaCadastro v-if="currentScreen === 'cadastro'" @navigate-to-login="navigateToLogin" />
-  </div>
+  </div> -->
 </template>
 
-<script setup lang="ts">
-import { ref } from 'vue';
-import TelaCadastro from "./view/telas/TelaCadastro.vue";
-import TelaLogin from "./view/telas/TelaLogin.vue";
+<script>
+import { onMounted } from "vue";
+import router from "./router";
 
-const currentScreen = ref('login');
-
-const navigateToCadastro = () => {
-  currentScreen.value = 'cadastro';
-};
-
-const navigateToLogin = () => {
-  currentScreen.value = 'login';
-};
+onMounted(() => {
+  // Exemplo: Redirecionar para a tela de login ao iniciar
+  router.push("/");
+});
 </script>
 
 <style scoped>

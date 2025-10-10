@@ -19,10 +19,15 @@
           :disabled="false"
         />
       </div>
-      <p>Não possui uma conta? <span @click="navigateToCadastro" class="cadastre-link">Cadastre-se</span></p>
+      <p>
+        Não possui uma conta?
+        <span @click="navigateToCadastro" class="cadastre-link"
+          >Cadastre-se</span
+        >
+      </p>
     </div>
     <Button
-      label="Entrar"
+      label="Entrar 1"
       :color="'teal'"
       :size="'medium'"
       :disabled="false"
@@ -31,32 +36,26 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import Button from "../../components/buttons/Button.vue";
 import Input from "../../components/inputs/Input.vue";
+import { ref } from "vue";
+import { useRouter } from "vue-router";
 
-export default {
-  components: {
-    Button,
-    Input,
-  },
-  data() {
-    return {
-      usuario: '',
-      senha: ''
-    };
-  },
-  methods: {
-    handleSave() {
-      window.api.login({
-        user: this.usuario,
-        password: this.senha,
-      });
-    },
-    navigateToCadastro() {
-      this.$emit('navigate-to-cadastro');
-    }
-  },
+const router = useRouter();
+const usuario = ref("");
+const senha = ref("");
+
+const handleSave = () => {
+  const ret = window.api.login({
+    user: usuario.value,
+    password: senha.value,
+  });
+  router.push("/principal");
+};
+
+const navigateToCadastro = () => {
+  router.push("/cadastro");
 };
 </script>
 

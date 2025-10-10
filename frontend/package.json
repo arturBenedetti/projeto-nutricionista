@@ -10,9 +10,11 @@
     "dev": "concurrently \"npm run dev:vite\" \"npm run dev:electron\""
   },
   "dependencies": {
-    "vue": "^3.5.18"
+    "vue": "^3.5.18",
+    "vue-router": "^4.5.1"
   },
   "devDependencies": {
+    "@types/vue-router": "^2.0.0",
     "@vitejs/plugin-vue": "^6.0.1",
     "@vue/tsconfig": "^0.7.0",
     "concurrently": "^9.2.1",
