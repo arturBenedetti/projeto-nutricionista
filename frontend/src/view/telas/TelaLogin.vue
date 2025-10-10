@@ -1,14 +1,14 @@
 <template>
   <div class="container">
     <img src="../../assets/caduceu.png" />
-    <p v-if="false" class="senha-invalida">Usuário ou senha inválidos</p>
+    <p v-if="erroLogin" class="senha-invalida">{{ erroLogin }}</p>
     <div class="forms-login">
       <div class="input-wrapper">
         <Input
           :value="usuario"
           placeholder="Digite seu usuário"
           @update:value="usuario = $event"
-          :disabled="false"
+          :disabled="carregando"
         />
       </div>
       <div class="input-wrapper">
@@ -16,7 +16,8 @@
           :value="senha"
           placeholder="Digite sua senha"
           @update:value="senha = $event"
-          :disabled="false"
+          :disabled="carregando"
+          type="password"
         />
       </div>
       <p>
@@ -27,11 +28,11 @@
       </p>
     </div>
     <Button
-      label="Entrar 1"
+      :label="carregando ? 'Entrando...' : 'Entrar'"
       :color="'teal'"
       :size="'medium'"
-      :disabled="false"
-      @click="handleSave"
+      :disabled="carregando || !usuario || !senha"
+      @click="handleLogin"
     />
   </div>
 </template>
@@ -45,13 +46,36 @@ import { useRouter } from "vue-router";
 const router = useRouter();
 const usuario = ref("");
 const senha = ref("");
+const erroLogin = ref("");
+const carregando = ref(false);
 
-const handleSave = () => {
-  const ret = window.api.login({
-    user: usuario.value,
-    password: senha.value,
-  });
-  router.push("/principal");
+const handleLogin = async () => {
+  if (!usuario.value || !senha.value) {
+    erroLogin.value = "Por favor, preencha todos os campos";
+    return;
+  }
+
+  carregando.value = true;
+  erroLogin.value = "";
+
+  try {
+    const resultado = await window.api.login({
+      user: usuario.value,
+      password: senha.value,
+    });
+
+    if (resultado) {
+      // Login bem-sucedido
+      router.push("/principal");
+    } else {
+      erroLogin.value = "Usuário ou senha inválidos";
+    }
+  } catch (error) {
+    console.error("Erro no login:", error);
+    erroLogin.value = "Erro ao fazer login. Tente novamente.";
+  } finally {
+    carregando.value = false;
+  }
 };
 
 const navigateToCadastro = () => {
