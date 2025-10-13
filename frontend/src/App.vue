@@ -1,9 +1,5 @@
 ﻿<template>
   <router-view />
-  <!-- <div>
-    <TelaLogin v-if="currentScreen === 'login'" @navigate-to-cadastro="navigateToCadastro" />
-    <TelaCadastro v-if="currentScreen === 'cadastro'" @navigate-to-login="navigateToLogin" />
-  </div> -->
 </template>
 
 <script>

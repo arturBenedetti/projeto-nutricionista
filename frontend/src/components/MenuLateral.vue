@@ -13,8 +13,8 @@
           >
         </li>
         <li>
-          <router-link to="/pessoas" exact-active-class="active"
-            >Pessoas</router-link
+          <router-link to="/pacientes" exact-active-class="active"
+            >Pacientes</router-link
           >
         </li>
       </ul>

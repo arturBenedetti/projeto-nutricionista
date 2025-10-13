@@ -19,6 +19,14 @@ const {
 } = require("../backend/dist/application/controllers/LoginController");
 const { loginIPC } = require("../backend/dist/application/ipc/LoginIPC");
 
+const {
+  PacienteRepository,
+} = require("../backend/dist/infrastructure/repositories/PacienteRepository");
+const {
+  PacienteController,
+} = require("../backend/dist/application/controllers/PacienteController");
+const { pacienteIPC } = require("../backend/dist/application/ipc/PacienteIPC");
+
 require("electron-reload")(__dirname, {
   electron: require(`${__dirname}/node_modules/electron`),
 });
@@ -46,9 +54,13 @@ async function createWindow() {
   const loginRepo = new LoginRepository(db);
   const loginController = new LoginController(loginRepo);
 
+  const pacienteRepo = new PacienteRepository(db);
+  const pacienteController = new PacienteController(pacienteRepo);
+
   // Registra IPCs
   registerUserIPC(userController);
   loginIPC(loginController);
+  pacienteIPC(pacienteController);
 
   mainWindow.loadURL("http://localhost:5173");
 }

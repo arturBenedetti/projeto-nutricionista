@@ -4,7 +4,7 @@ import TelaLogin from "./view/telas/TelaLogin.vue";
 import TelaCadastro from "./view/telas/TelaCadastro.vue";
 import TelaHome from "./view/telas/TelaHome.vue";
 import TelaExemplo from "./view/telas/TelaExemplo.vue";
-import TelaPessoas from "./view/Telas/TelaPessoas.vue";
+import TelaPacientes from "./view/Telas/TelaPacientes.vue";
 
 const routes = [
   { path: "/", name: "login", component: TelaLogin },
@@ -17,9 +17,9 @@ const routes = [
       { path: "/home", name: "home", component: TelaHome },
       { path: "/exemplo", name: "exemplo", component: TelaExemplo },
       {
-        path: "/pessoas",
-        name: "pessoas",
-        component: TelaPessoas,
+        path: "/pacientes",
+        name: "pacientes",
+        component: TelaPacientes,
       },
     ],
   },

@@ -1,6 +1,6 @@
 <template>
   <div class="p-6">
-    <h1 class="text-2xl font-bold mb-4">Cadastro de Pessoas</h1>
+    <h1 class="text-2xl font-bold mb-4">Cadastro de Pacientes</h1>
 
     <PersonList
       v-if="!selectedPerson && !showForm"

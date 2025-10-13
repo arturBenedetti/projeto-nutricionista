@@ -10,6 +10,7 @@
     "dev": "concurrently \"npm run dev:vite\" \"npm run dev:electron\""
   },
   "dependencies": {
+    "@tailwindcss/vite": "^4.1.14",
     "vue": "^3.5.18",
     "vue-router": "^4.5.1"
   },
@@ -17,8 +18,11 @@
     "@types/vue-router": "^2.0.0",
     "@vitejs/plugin-vue": "^6.0.1",
     "@vue/tsconfig": "^0.7.0",
+    "autoprefixer": "^10.4.21",
     "concurrently": "^9.2.1",
     "electron": "^38.1.0",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.14",
     "typescript": "~5.8.3",
     "vite": "^7.1.2",
     "vue-tsc": "^3.0.5",

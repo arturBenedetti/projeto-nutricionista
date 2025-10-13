@@ -1,12 +1,12 @@
 <template>
   <div>
     <div class="flex justify-between mb-3">
-      <h2 class="text-lg font-semibold">Lista de Pessoas</h2>
+      <h2 class="text-lg font-semibold">Lista de Pacientes</h2>
       <button
         @click="$emit('add')"
         class="bg-green-600 text-white px-4 py-2 rounded"
       >
-        Nova Pessoa
+        Novo Paciente
       </button>
     </div>
 

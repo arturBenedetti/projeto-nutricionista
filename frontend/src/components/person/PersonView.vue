@@ -1,6 +1,6 @@
 <template>
   <div class="max-w-md bg-white shadow rounded p-4">
-    <h2 class="text-lg font-semibold mb-4">Detalhes da Pessoa</h2>
+    <h2 class="text-lg font-semibold mb-4">Detalhes do Paciente</h2>
     <p><strong>Nome:</strong> {{ person.nome }}</p>
     <p><strong>CPF:</strong> {{ person.cpf }}</p>
 
