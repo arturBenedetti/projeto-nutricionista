@@ -53,6 +53,9 @@
 <script>
 import Input from "../../components/inputs/Input.vue";
 import Button from "../../components/buttons/Button.vue";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
 
 export default {
   name: "Register",
@@ -113,7 +116,7 @@ export default {
         });
     },
     navigateToLogin() {
-      this.$emit("navigate-to-login");
+      router.push("/");
     },
   },
 };
