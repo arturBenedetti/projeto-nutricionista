@@ -6,10 +6,8 @@ import { v4 as uuidv4 } from "uuid";
 export class CreatePacienteUseCase {
   constructor(private pacienteRepo: IPacienteRepository) {}
 
-  async criarPaciente(
-    pacienteDTO: CriarPacienteDTO
-  ): Promise<Paciente | null> {
-    try {      
+  async criarPaciente(pacienteDTO: CriarPacienteDTO): Promise<Paciente | null> {
+    try {
       const paciente = new Paciente(
         uuidv4(),
         pacienteDTO.idNutricionista,
