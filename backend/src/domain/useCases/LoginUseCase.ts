@@ -6,7 +6,11 @@ export class LoginUseCase {
   constructor(private loginRepo: ILoginRepository) {}
 
   async login(data: LoginDTO): Promise<User | null> {
-    console.log(data);
-    return await this.loginRepo.findUserByCredentials(data);
+    try {
+      return await this.loginRepo.findUserByCredentials(data);
+    } catch (error) {
+      console.error("Erro durante o login:", error);
+      return null;
+    }
   }
 }

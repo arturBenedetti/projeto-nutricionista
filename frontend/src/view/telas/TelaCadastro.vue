@@ -1,7 +1,7 @@
 ﻿<template>
   <div class="register-form">
     <h2>Cadastro de Conta</h2>
-    <div class="linha-input">
+    <div>
       <input
         label="Nome Completo"
         placeholder="Digite seu nome"
@@ -50,76 +50,70 @@
   </div>
 </template>
 
-<script>
-import Input from "../../components/inputs/Input.vue";
-import Button from "../../components/buttons/Button.vue";
+<script setup>
+import { onMounted, ref, computed } from "vue";
+import { useRouter } from "vue-router";
 
-export default {
-  name: "Register",
-  components: { Input, Button },
-  data() {
-    return {
-      form: {
-        name: "",
-        email: "",
-        user: "",
-        password: "",
-        confirmPassword: "",
-      },
-      errorMessage: "",
-      successMessage: "",
-    };
-  },
-  computed: {
-    isFormValid() {
-      return (
-        this.form.name &&
-        this.form.email &&
-        this.form.user &&
-        this.form.password &&
-        this.form.password === this.form.confirmPassword
-      );
-    },
-  },
-  methods: {
-    submitForm() {
-      if (!this.isFormValid) {
-        this.errorMessage = "Preencha todos os campos corretamente.";
-        this.successMessage = "";
-        return;
-      }
+const router = useRouter();
+const errorMessage = ref("");
+const successMessage = ref("");
+const form = ref({
+  name: "",
+  email: "",
+  user: "",
+  password: "",
+  confirmPassword: "",
+});
 
-      window.api
-        .createUser({
-          name: this.form.name,
-          email: this.form.email,
-          user: this.form.user,
-          password: this.form.password,
-        })
-        .then(() => {
-          this.successMessage = `Conta criada com sucesso para ${this.form.name}!`;
-          this.errorMessage = "";
+const isFormValid = () => {
+  return (
+    form.value.name &&
+    form.value.email &&
+    form.value.user &&
+    form.value.password &&
+    form.value.password === form.value.confirmPassword
+  );
+};
 
-          // Limpar o formulário
-          this.form.name = "";
-          this.form.email = "";
-          this.form.user = "";
-          this.form.password = "";
-          this.form.confirmPassword = "";
-        })
-        .catch((err) => {
-          this.errorMessage = `Erro ao criar conta: ${err.message}`;
-          this.successMessage = "";
-        });
-    },
-    navigateToLogin() {
-      this.$emit("navigate-to-login");
-    },
-  },
+const submitForm = () => {
+  if (!isFormValid()) {
+    errorMessage.value = "Preencha todos os campos corretamente.";
+    successMessage.value = "";
+    return;
+  }
+
+  window.api
+    .createUser({
+      name: form.value.name,
+      email: form.value.email,
+      user: form.value.user,
+      password: form.value.password,
+    })
+    .then(() => {
+      successMessage.value = `Conta criada com sucesso para ${form.value.name}!`;
+      errorMessage.value = "";
+
+      // Limpar o formulário
+      form.value.name = "";
+      form.value.email = "";
+      form.value.user = "";
+      form.value.password = "";
+      form.value.confirmPassword = "";
+    })
+    .catch((err) => {
+      errorMessage.value = `Erro ao criar conta: ${err.message}`;
+      successMessage.value = "";
+    });
+};
+
+const navigateToLogin = () => {
+  router.push("/");
 };
 </script>
 
 <style scoped>
+@import "tailwindcss";
+
 .register-form {
   max-width: 400px;
   margin: auto;
@@ -129,8 +123,14 @@ export default {
   box-shadow: 0px 0px 10px #00b5ad;
 }
 
+input {
+  @apply bg-teal-500/20 border border-teal-500 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent gap-1;
+}
 .linha-input {
-  padding-bottom: 10px;
+  margin-top: 15px;
+}
+button {
+  margin-top: 15px;
 }
 
 h2 {

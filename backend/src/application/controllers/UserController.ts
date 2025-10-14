@@ -2,6 +2,7 @@ import { CreateUserUseCase } from "../../domain/useCases/CreateUserUseCase";
 import { ListUsersUseCase } from "../../domain/useCases/ListUsersUseCase";
 import { IUserRepository } from "../interfaces/IUserRepository";
 import { CreateUserDTO } from "../dtos/CreateUserDTO";
+import { UserResponseDTO } from "../dtos/UserResponseDTO";
 
 export class UserController {
   private createUser: CreateUserUseCase;
@@ -12,11 +13,13 @@ export class UserController {
     this.listUsers = new ListUsersUseCase(userRepo);
   }
 
-  async create(req: CreateUserDTO) {
-    return await this.createUser.execute(req);
+  async create(req: CreateUserDTO): Promise<UserResponseDTO> {
+    const user = await this.createUser.execute(req);
+    return UserResponseDTO.fromUser(user);
   }
 
-  async list() {
-    return await this.listUsers.execute();
+  async list(): Promise<UserResponseDTO[]> {
+    const users = await this.listUsers.execute();
+    return users.map(user => UserResponseDTO.fromUser(user));
   }
 }
