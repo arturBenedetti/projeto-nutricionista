@@ -6,11 +6,12 @@
   "scripts": {
     "build": "cd ../backend && tsc",
     "start": "npm run build && electron .",
-    "dev": "tsc --watch"
+    "dev": "concurrently \"cd ../backend && tsc --watch\" \"electron .\""
   },
   "devDependencies": {
-    "electron": "^38.1.0",
     "@types/node": "^20.12.12",
+    "concurrently": "^9.2.1",
+    "electron": "^38.1.0",
     "typescript": "^5.6.3"
   },
   "dependencies": {

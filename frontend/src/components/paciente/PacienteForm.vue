@@ -8,7 +8,7 @@ const localPaciente = ref({
   nome: "",
   email: "",
   sexo: "",
-  dtaNascimento: "",
+  dataNascimento: "",
   altura: "",
   peso: "",
   imc: "",
@@ -39,7 +39,7 @@ watch(
           nome: "",
           email: "",
           sexo: "",
-          dtaNascimento: "",
+          dataNascimento: "",
           altura: "",
           peso: "",
           imc: "",
@@ -117,7 +117,7 @@ async function save() {
 
     <label class="block mb-2">Data de Nascimento</label>
     <input
-      v-model="localPaciente.dtaNascimento"
+      v-model="localPaciente.dataNascimento"
       type="date"
       class="border w-full p-2 mb-3 rounded"
       required
