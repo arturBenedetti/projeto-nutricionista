@@ -1,3 +1,74 @@
+<script setup>
+import { ref, watch } from "vue";
+
+const props = defineProps({ paciente: Object });
+const emit = defineEmits(["cancel", "saved"]);
+
+const localPaciente = ref({
+  nome: "",
+  email: "",
+  sexo: "",
+  dtaNascimento: "",
+  altura: "",
+  peso: "",
+  imc: "",
+  anamnese: "",
+});
+
+function calcIMC() {
+  if (localPaciente.value.peso && localPaciente.value.altura) {
+    const peso = parseFloat(localPaciente.value.peso);
+    const altura = parseFloat(localPaciente.value.altura) / 100;
+
+    if (altura > 0) {
+      const imc = peso / (altura * altura);
+      localPaciente.value.imc = imc.toFixed(2);
+      return;
+    }
+  }
+
+  localPaciente.value.imc = "";
+}
+
+watch(
+  () => props.paciente,
+  (newVal) => {
+    localPaciente.value = newVal
+      ? { ...newVal }
+      : {
+          nome: "",
+          email: "",
+          sexo: "",
+          dtaNascimento: "",
+          altura: "",
+          peso: "",
+          imc: "",
+          anamnese: "",
+        };
+  },
+  { immediate: true }
+);
+
+async function save() {
+  if (localPaciente.value.id) {
+    // Update existing paciente
+  } else {
+    const novoPaciente = {
+      idNutricionista: "",
+      nome: localPaciente.value.nome,
+      sexo: localPaciente.value.sexo,
+      email: localPaciente.value.email,
+      dataNascimento: localPaciente.value.dataNascimento,
+      peso: localPaciente.value.peso,
+      altura: localPaciente.value.altura,
+      anamnese: localPaciente.value.anamnese,
+    };
+    await window.api.criarPaciente(novoPaciente);
+  }
+  emit("saved");
+}
+</script>
+
 <template>
   <form @submit.prevent="save" class="max-w-md bg-[#111827] shadow rounded p-4">
     <h2 class="text-lg font-semibold mb-4">
@@ -101,66 +172,6 @@
     </div>
   </form>
 </template>
-
-<script setup>
-import { ref, watch } from "vue";
-
-const props = defineProps({ paciente: Object });
-const emit = defineEmits(["cancel", "saved"]);
-
-const localPaciente = ref({
-  nome: "",
-  email: "",
-  sexo: "",
-  dtaNascimento: "",
-  altura: "",
-  peso: "",
-  imc: "",
-  anamnese: "",
-});
-
-function calcIMC() {
-  if (localPaciente.value.peso && localPaciente.value.altura) {
-    const peso = parseFloat(localPaciente.value.peso);
-    const altura = parseFloat(localPaciente.value.altura) / 100;
-
-    if (altura > 0) {
-      const imc = peso / (altura * altura);
-      localPaciente.value.imc = imc.toFixed(2);
-      return;
-    }
-  }
-
-  localPaciente.value.imc = "";
-}
-
-watch(
-  () => props.paciente,
-  (newVal) => {
-    localPaciente.value = newVal
-      ? { ...newVal }
-      : {
-          nome: "",
-          email: "",
-          sexo: "",
-          dtaNascimento: "",
-          altura: "",
-          peso: "",
-          imc: "",
-          anamnese: "",
-        };
-  },
-  { immediate: true }
-);
-
-async function save() {
-  if (localPaciente.value.id) {
-  } else {
-    await window.api.criarPaciente(localPaciente.value);
-  }
-  emit("saved");
-}
-</script>
 
 <style scoped>
 :root {
