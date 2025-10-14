@@ -2,52 +2,52 @@
   <div class="p-6">
     <h1 class="text-2xl font-bold mb-4">Cadastro de Pacientes</h1>
 
-    <PersonList
-      v-if="!selectedPerson && !showForm"
+    <PacienteList
+      v-if="!selectedPaciente && !showForm"
       @add="onAdd"
       @edit="onEdit"
       @view="onView"
       @delete="onDelete"
     />
 
-    <PersonForm
+    <PacienteForm
       v-if="showForm"
-      :person="selectedPerson"
+      :paciente="selectedPaciente"
       @cancel="onCancel"
       @saved="onSaved"
     />
 
-    <PersonView v-if="viewMode" :person="selectedPerson" @close="onCancel" />
+    <PacienteView v-if="viewMode" :paciente="selectedPaciente" @close="onCancel" />
   </div>
 </template>
 
 <script setup>
 import { ref } from "vue";
-import PersonList from "../../components/person/PersonList.vue";
-import PersonForm from "../../components/person/PersonForm.vue";
-import PersonView from "../../components/person/PersonView.vue";
+import PacienteList from "../../components/paciente/PacienteList.vue";
+import PacienteForm from "../../components/paciente/PacienteForm.vue";
+import PacienteView from "../../components/paciente/PacienteView.vue";
 
-const selectedPerson = ref(null);
+const selectedPaciente = ref(null);
 const showForm = ref(false);
 const viewMode = ref(false);
 
 function onAdd() {
-  selectedPerson.value = null;
+  selectedPaciente.value = null;
   showForm.value = true;
 }
 
-function onEdit(person) {
-  selectedPerson.value = person;
+function onEdit(paciente) {
+  selectedPaciente.value = paciente;
   showForm.value = true;
 }
 
-function onView(person) {
-  selectedPerson.value = person;
+function onView(paciente) {
+  selectedPaciente.value = paciente;
   viewMode.value = true;
 }
 
 function onCancel() {
-  selectedPerson.value = null;
+  selectedPaciente.value = null;
   showForm.value = false;
   viewMode.value = false;
 }

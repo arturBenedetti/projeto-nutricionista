@@ -15,9 +15,9 @@
 </template>
 
 <script setup>
-import Cabecalho from "../components/Cabecalho.vue";
-import MenuLateral from "../components/MenuLateral.vue";
-import Rodape from "../components/Rodape.vue";
+import Cabecalho from "../components/layout/Cabecalho.vue";
+import MenuLateral from "../components/layout/MenuLateral.vue";
+import Rodape from "../components/layout/Rodape.vue";
 </script>
 
 <style scoped>

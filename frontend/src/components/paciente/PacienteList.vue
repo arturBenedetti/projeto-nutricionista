@@ -16,22 +16,22 @@
       <thead class="bg-gray-100">
         <tr>
           <th class="p-2 text-left">Nome</th>
-          <th class="p-2 text-left">CPF</th>
+          <th class="p-2 text-left">email</th>
           <th class="p-2 text-left">Ações</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="person in people" :key="person.id" class="border-b">
-          <td class="p-2">{{ person.nome }}</td>
-          <td class="p-2">{{ person.cpf }}</td>
+        <tr v-for="paciente in people" :key="paciente.id" class="border-b">
+          <td class="p-2">{{ paciente.nome }}</td>
+          <td class="p-2">{{ paciente.email }}</td>
           <td class="p-2">
-            <button @click="$emit('view', person)" class="text-blue-600 mr-2">
+            <button @click="$emit('view', paciente)" class="text-blue-600 mr-2">
               👁️
             </button>
-            <button @click="$emit('edit', person)" class="text-yellow-600 mr-2">
+            <button @click="$emit('edit', paciente)" class="text-yellow-600 mr-2">
               ✏️
             </button>
-            <button @click="confirmDelete(person)" class="text-red-600">
+            <button @click="confirmDelete(paciente)" class="text-red-600">
               🗑️
             </button>
           </td>
@@ -40,40 +40,39 @@
     </table>
 
     <ConfirmDialog
-      v-if="personToDelete"
+      v-if="pacienteToDelete"
       title="Excluir pessoa"
       message="Tem certeza que deseja excluir esta pessoa?"
-      @confirm="deletePerson"
-      @cancel="personToDelete = null"
+      @confirm="deletePaciente"
+      @cancel="pacienteToDelete = null"
     />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from "vue";
-import personService from "../../api/personService";
-// import ConfirmDialog from "../../components/shared/ConfirmDialog.vue";
-// import LoadingSpinner from "../../components/shared/LoadingSpinner.vue";
+import ConfirmDialog from "../../components/shared/ConfirmDialog.vue";
+import LoadingSpinner from "../../components/shared/LoadingSpinner.vue";
 
-const people = ref([]);
+const pacientes = ref([]);
 const loading = ref(true);
-const personToDelete = ref(null);
+const pacienteToDelete = ref(null);
 
 onMounted(fetchData);
 
 async function fetchData() {
-  loading.value = true;
-  people.value = await personService.getAll();
-  loading.value = false;
+  // loading.value = true;
+  // pacientes.value = await pacienteService.getAll();
+  // loading.value = false;
 }
 
-function confirmDelete(person) {
-  personToDelete.value = person;
+function confirmDelete(paciente) {
+  pacienteToDelete.value = paciente;
 }
 
-async function deletePerson() {
-  await personService.remove(personToDelete.value.id);
-  personToDelete.value = null;
+async function deletePaciente() {
+  await pacienteService.remove(pacienteToDelete.value.id);
+  pacienteToDelete.value = null;
   fetchData();
 }
 </script>

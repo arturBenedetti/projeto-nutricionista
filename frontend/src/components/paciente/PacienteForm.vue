@@ -1,12 +1,12 @@
 <template>
   <form @submit.prevent="save" class="max-w-md bg-[#111827] shadow rounded p-4">
     <h2 class="text-lg font-semibold mb-4">
-      {{ person?.id ? "Editar Paciente" : "Novo Paciente" }}
+      {{ paciente?.id ? "Editar Paciente" : "Novo Paciente" }}
     </h2>
 
     <label class="block mb-2">Nome</label>
     <input
-      v-model="localPerson.nome"
+      v-model="localPaciente.nome"
       type="text"
       class="border w-full p-2 mb-3 rounded"
       required
@@ -14,7 +14,7 @@
 
     <label class="block mb-2">Email</label>
     <input
-      v-model="localPerson.email"
+      v-model="localPaciente.email"
       type="text"
       class="border w-full p-2 mb-3 rounded"
       required
@@ -27,7 +27,7 @@
           type="radio"
           id="masculino"
           value="masculino"
-          v-model="localPerson.sexo"
+          v-model="localPaciente.sexo"
           class="mr-1"
         />
         <label for="masculino">Masculino</label>
@@ -37,7 +37,7 @@
           type="radio"
           id="feminino"
           value="feminino"
-          v-model="localPerson.sexo"
+          v-model="localPaciente.sexo"
           class="mr-1"
         />
         <label for="feminino">Feminino</label>
@@ -46,7 +46,7 @@
 
     <label class="block mb-2">Data de Nascimento</label>
     <input
-      v-model="localPerson.dtaNascimento"
+      v-model="localPaciente.dtaNascimento"
       type="date"
       class="border w-full p-2 mb-3 rounded"
       required
@@ -54,7 +54,7 @@
 
     <label class="block mb-2">Altura (cm)</label>
     <input
-      v-model="localPerson.altura"
+      v-model="localPaciente.altura"
       type="text"
       class="border w-full p-2 mb-3 rounded"
       @change="calcIMC"
@@ -63,7 +63,7 @@
 
     <label class="block mb-2">Peso (kg)</label>
     <input
-      v-model="localPerson.peso"
+      v-model="localPaciente.peso"
       type="text"
       class="border w-full p-2 mb-3 rounded"
       @change="calcIMC"
@@ -72,7 +72,7 @@
 
     <label class="block mb-2">IMC</label>
     <input
-      v-model="localPerson.imc"
+      v-model="localPaciente.imc"
       disabled
       type="text"
       class="border w-full p-2 mb-3 rounded"
@@ -81,7 +81,7 @@
 
     <label class="block mb-2">Anamnese</label>
     <textarea
-      v-model="localPerson.anamnese"
+      v-model="localPaciente.anamnese"
       rows="5"
       class="border w-full p-2 mb-3 rounded"
       required
@@ -104,12 +104,11 @@
 
 <script setup>
 import { ref, watch } from "vue";
-import personService from "../../api/personService";
 
-const props = defineProps({ person: Object });
+const props = defineProps({ paciente: Object });
 const emit = defineEmits(["cancel", "saved"]);
 
-const localPerson = ref({
+const localPaciente = ref({
   nome: "",
   email: "",
   sexo: "",
@@ -121,24 +120,24 @@ const localPerson = ref({
 });
 
 function calcIMC() {
-  if (localPerson.value.peso && localPerson.value.altura) {
-    const peso = parseFloat(localPerson.value.peso);
-    const altura = parseFloat(localPerson.value.altura) / 100;
+  if (localPaciente.value.peso && localPaciente.value.altura) {
+    const peso = parseFloat(localPaciente.value.peso);
+    const altura = parseFloat(localPaciente.value.altura) / 100;
 
     if (altura > 0) {
       const imc = peso / (altura * altura);
-      localPerson.value.imc = imc.toFixed(2);
+      localPaciente.value.imc = imc.toFixed(2);
       return;
     }
   }
 
-  localPerson.value.imc = "";
+  localPaciente.value.imc = "";
 }
 
 watch(
-  () => props.person,
+  () => props.paciente,
   (newVal) => {
-    localPerson.value = newVal
+    localPaciente.value = newVal
       ? { ...newVal }
       : {
           nome: "",
@@ -155,10 +154,9 @@ watch(
 );
 
 async function save() {
-  if (localPerson.value.id) {
-    
+  if (localPaciente.value.id) {
   } else {
-    await window.api.criarPaciente(localPerson.value);
+    await window.api.criarPaciente(localPaciente.value);
   }
   emit("saved");
 }

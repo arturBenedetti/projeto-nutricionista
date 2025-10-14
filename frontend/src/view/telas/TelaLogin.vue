@@ -1,25 +1,19 @@
 <template>
   <div class="container">
     <img src="../../assets/caduceu.png" />
-    <p v-if="erroLogin" class="senha-invalida">{{ erroLogin }}</p>
     <div class="forms-login">
       <div class="input-wrapper">
-        <Input
-          :value="usuario"
-          placeholder="Digite seu usuário"
-          @update:value="usuario = $event"
-          :disabled="carregando"
-        />
+        <input type="text" v-model="usuario" placeholder="Digite seu usuário" />
       </div>
       <div class="input-wrapper">
-        <Input
-          :value="senha"
-          placeholder="Digite sua senha"
-          @update:value="senha = $event"
-          :disabled="carregando"
+        <input
+          class="bg-teal-500/20 border border-teal-500 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
           type="password"
+          v-model="senha"
+          placeholder="Digite sua senha"
         />
       </div>
+      <p v-if="erroLogin" class="senha-invalida">{{ erroLogin }}</p>
       <p>
         Não possui uma conta?
         <span @click="navigateToCadastro" class="cadastre-link"
@@ -27,19 +21,16 @@
         >
       </p>
     </div>
-    <Button
-      :label="carregando ? 'Entrando...' : 'Entrar'"
-      :color="'teal'"
-      :size="'medium'"
-      :disabled="carregando || !usuario || !senha"
+    <button
+      class="bg-teal-500 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded"
       @click="handleLogin"
-    />
+    >
+      {{ carregando ? "Entrando..." : "Entrar" }}
+    </button>
   </div>
 </template>
 
 <script setup>
-import Button from "../../components/buttons/Button.vue";
-import Input from "../../components/inputs/Input.vue";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 
@@ -84,6 +75,12 @@ const navigateToCadastro = () => {
 </script>
 
 <style scoped>
+@import "tailwindcss";
+
+input {
+  @apply bg-teal-500/20 border border-teal-500 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent;
+}
+
 .container {
   display: flex;
   flex-direction: column;
