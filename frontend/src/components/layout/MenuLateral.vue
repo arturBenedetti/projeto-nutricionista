@@ -3,19 +3,13 @@
     <nav>
       <ul>
         <li>
-          <router-link to="/home" exact-active-class="active"
-            >🏠 Home</router-link
-          >
+          <router-link to="/home" exact-active-class="active">🏠 Home</router-link>
         </li>
         <li>
-          <router-link to="/exemplo" exact-active-class="active"
-            >ℹ️ Exemplo</router-link
-          >
+          <router-link to="/exemplo" exact-active-class="active">ℹ️ Exemplo</router-link>
         </li>
         <li>
-          <router-link to="/pacientes" exact-active-class="active"
-            >Pacientes</router-link
-          >
+          <router-link to="/pacientes" exact-active-class="active">Pacientes</router-link>
         </li>
       </ul>
     </nav>
