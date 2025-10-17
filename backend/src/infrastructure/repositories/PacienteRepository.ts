@@ -74,4 +74,26 @@ export class PacienteRepository implements IPacienteRepository {
         )
     );
   }
+
+  async findById(id: string): Promise<Paciente | null> {
+    const pacienteDoc = await this.collection.findOne({ _id: id });
+
+    if (!pacienteDoc) {
+      return null;
+    }
+
+    return new Paciente(
+      pacienteDoc._id,
+      pacienteDoc.idNutricionista,
+      pacienteDoc.nome,
+      pacienteDoc.sexo,
+      pacienteDoc.email,
+      pacienteDoc.dataNascimento,
+      pacienteDoc.peso,
+      pacienteDoc.altura,
+      pacienteDoc.anamnese
+    );
+
+  }
+
 }
