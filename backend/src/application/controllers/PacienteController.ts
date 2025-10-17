@@ -1,18 +1,18 @@
-import { CreatePacienteUseCase } from "../../domain/useCases/CreatePacienteUseCase";
-import { ListPacientesUseCase } from "../../domain/useCases/ListPacientesUseCase";
 import { IPacienteRepository } from "../interfaces/IPacienteRepository";
+import { CreatePacienteUseCase } from "../../domain/useCases/CreatePacienteUseCase";
 import { CriarPacienteDTO } from "../dtos/CriarPacienteDTO";
 import { CriarPacienteResponseDTO } from "../dtos/CriarPacienteResponseDTO";
+import { ListPacientesUseCase } from "../../domain/useCases/ListPacientesUseCase";
+import { ListarPacientesDTO } from "../dtos/ListarPacientesDTO";
+import { ListarPacientesResponseDTO } from "../dtos/ListarPacientesResponseDTO";
 import { GetDadosPacienteUseCase } from "../../domain/useCases/GetDadosPacienteUseCase";
 import { ConsultarPacienteDTO } from "../dtos/ConsultaPacienteDTO";
 import { ConsultarPacienteResponseDTO } from "../dtos/ConsultarPacienteResponseDTO";
-import { ListarPacientesDTO } from "../dtos/ListarPacientesDTO";
-import { ListarPacientesResponseDTO } from "../dtos/ListarPacientesResponseDTO";
 
 export class PacienteController {
   private createPacienteUseCase: CreatePacienteUseCase;
   private listPacientesUseCase: ListPacientesUseCase;
-  private getDadosPaciente : GetDadosPacienteUseCase;
+  private getDadosPaciente: GetDadosPacienteUseCase;
 
   constructor(pacienteRepo: IPacienteRepository) {
     this.createPacienteUseCase = new CreatePacienteUseCase(pacienteRepo);

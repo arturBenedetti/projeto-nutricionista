@@ -1,29 +1,34 @@
+<script setup>
+import { loggedUser } from "../../services/UsuarioService";
+</script>
+
 <template>
   <aside class="sidebar">
     <nav>
       <ul>
         <li>
-          <router-link to="/home" exact-active-class="active">🏠 Home</router-link>
+          <router-link to="/home" exact-active-class="active">Home</router-link>
         </li>
         <li>
-          <router-link to="/exemplo" exact-active-class="active">ℹ️ Exemplo</router-link>
+          <router-link
+            v-if="loggedUser.isNutricionista"
+            to="/pacientes"
+            exact-active-class="active"
+            >Pacientes</router-link
+          >
         </li>
         <li>
-          <router-link to="/pacientes" exact-active-class="active">Pacientes</router-link>
-        </li>
-        <li>
-          <router-link to="/dados-paciente" exact-active-class="active">Meus Dados & Evolução</router-link>
+          <router-link
+            v-if="loggedUser.isPaciente"
+            to="/dados-paciente"
+            exact-active-class="active"
+            >Meus Dados</router-link
+          >
         </li>
       </ul>
     </nav>
   </aside>
 </template>
-
-<script>
-export default {
-  name: "MenuLateral",
-};
-</script>
 
 <style scoped>
 .sidebar {

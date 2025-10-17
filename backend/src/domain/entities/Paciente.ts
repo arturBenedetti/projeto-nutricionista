@@ -1,5 +1,3 @@
-import { CriarPacienteDTO } from "../../application/dtos/CriarPacienteDTO";
-
 export class Paciente {
   constructor(
     public readonly id: string,

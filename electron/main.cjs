@@ -63,6 +63,7 @@ async function createWindow() {
   pacienteIPC(pacienteController);
 
   mainWindow.loadURL("http://localhost:5173");
+  return mainWindow;
 }
 
 app.on("ready", () => {
