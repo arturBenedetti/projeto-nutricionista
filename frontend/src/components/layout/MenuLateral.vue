@@ -11,6 +11,9 @@
         <li>
           <router-link to="/pacientes" exact-active-class="active">Pacientes</router-link>
         </li>
+        <li>
+          <router-link to="/dados-paciente" exact-active-class="active">Meus Dados & Evolução</router-link>
+        </li>
       </ul>
     </nav>
   </aside>
