@@ -1,5 +1,6 @@
 <script setup>
 import { ref, watch } from "vue";
+import { loggedUser } from "../../services/UsuarioService";
 
 const props = defineProps({ paciente: Object });
 const emit = defineEmits(["cancel", "saved"]);
@@ -54,7 +55,7 @@ async function save() {
     // Update existing paciente
   } else {
     const novoPaciente = {
-      idNutricionista: "",
+      idNutricionista: loggedUser.value.id,
       nome: localPaciente.value.nome,
       sexo: localPaciente.value.sexo,
       email: localPaciente.value.email,
