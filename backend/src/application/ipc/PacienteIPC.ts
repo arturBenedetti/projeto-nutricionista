@@ -6,4 +6,7 @@ export function pacienteIPC(pacienteController: PacienteController) {
   ipcMain.handle("criarPaciente", async (_event, data) => {
     return await pacienteController.criarPaciente(data);
   });
+  ipcMain.handle("consultarDados", async (_event, data) => {
+    return await pacienteController.consultarDados(data);
+  });
 }

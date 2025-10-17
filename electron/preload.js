@@ -8,4 +8,6 @@ contextBridge.exposeInMainWorld("api", {
   login: (data) => ipcRenderer.invoke("login", data),
   // Paciente
   criarPaciente: (data) => ipcRenderer.invoke("criarPaciente", data),
+  consultarDados: (data) => ipcRenderer.invoke("consultarDados", data),
+
 });

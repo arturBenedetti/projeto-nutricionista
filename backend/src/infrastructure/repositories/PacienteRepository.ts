@@ -56,29 +56,24 @@ export class PacienteRepository implements IPacienteRepository {
   }
 
   async findById(id: string): Promise<Paciente | null> {
-    try {
-      const pacienteDoc = await this.collection.findOne({ _id: id });
+    const pacienteDoc = await this.collection.findOne({ _id: id });
 
-      if (!pacienteDoc) {
-        return null;
-      }
-
-      return new Paciente(
-        pacienteDoc._id,
-        pacienteDoc.idNutricionista,
-        pacienteDoc.nome,
-        pacienteDoc.sexo,
-        pacienteDoc.email,
-        pacienteDoc.dataNascimento,
-        pacienteDoc.peso,
-        pacienteDoc.altura,
-        pacienteDoc.anamnese
-      );
-
-    } catch (error) {
-      console.error("Erro ao buscar paciente:", error);
-      throw new Error("Erro ao buscar paciente");
+    if (!pacienteDoc) {
+      return null;
     }
+
+    return new Paciente(
+      pacienteDoc._id,
+      pacienteDoc.idNutricionista,
+      pacienteDoc.nome,
+      pacienteDoc.sexo,
+      pacienteDoc.email,
+      pacienteDoc.dataNascimento,
+      pacienteDoc.peso,
+      pacienteDoc.altura,
+      pacienteDoc.anamnese
+    );
+
   }
 
 }
