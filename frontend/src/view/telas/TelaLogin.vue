@@ -59,7 +59,7 @@ const handleLogin = async () => {
     if (resultado) {
       // Login bem-sucedido
       setLoggedUser(resultado);
-      console.log(loggedUser.value);
+    
       router.push("/principal");
     } else {
       erroLogin.value = "Usuário ou senha inválidos";
