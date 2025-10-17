@@ -26,6 +26,7 @@ import { ref } from "vue";
 import PacienteList from "../../components/paciente/PacienteList.vue";
 import PacienteForm from "../../components/paciente/PacienteForm.vue";
 import PacienteView from "../../components/paciente/PacienteView.vue";
+import { loggedUser } from "../../services/UsuarioService";
 
 const selectedPaciente = ref(null);
 const showForm = ref(false);

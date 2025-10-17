@@ -1,11 +1,11 @@
-import { User } from "../entities/User";
+import { Usuario } from "../entities/Usuario";
 import { ILoginRepository } from "../../application/interfaces/ILoginRepository";
 import { LoginDTO } from "../../application/dtos/LoginDTO";
 
 export class LoginUseCase {
   constructor(private loginRepo: ILoginRepository) {}
 
-  async login(data: LoginDTO): Promise<User | null> {
+  async login(data: LoginDTO): Promise<Usuario | null> {
     try {
       return await this.loginRepo.findUserByCredentials(data);
     } catch (error) {

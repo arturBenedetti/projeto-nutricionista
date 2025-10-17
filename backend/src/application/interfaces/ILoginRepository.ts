@@ -1,6 +1,6 @@
-import { User } from "../../../src/domain/entities/User";
+import { Usuario } from "../../domain/entities/Usuario";
 import { LoginDTO } from "../dtos/LoginDTO";
 
 export interface ILoginRepository {
-  findUserByCredentials(data: LoginDTO): Promise<User | null>;
+  findUserByCredentials(data: LoginDTO): Promise<Usuario | null>;
 }

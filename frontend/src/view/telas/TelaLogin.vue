@@ -33,6 +33,7 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import { loggedUser, setLoggedUser } from "../../services/UsuarioService";
 
 const router = useRouter();
 const usuario = ref("");
@@ -57,6 +58,8 @@ const handleLogin = async () => {
 
     if (resultado) {
       // Login bem-sucedido
+      setLoggedUser(resultado);
+    
       router.push("/principal");
     } else {
       erroLogin.value = "Usuário ou senha inválidos";
