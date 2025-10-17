@@ -12,7 +12,7 @@
 
     <LoadingSpinner v-if="loading" />
 
-    <table v-else class="min-w-full bg-black shadow rounded">
+    <table v-else class="min-w-full bg-[#111827] shadow rounded">
       <thead class="bg-gray-700">
         <tr>
           <th class="p-2 text-left">Nome</th>
@@ -29,17 +29,17 @@
           <td class="p-2">{{ paciente.nome }}</td>
           <td class="p-2">{{ paciente.email }}</td>
           <td class="p-2">
-            <button @click="$emit('view', paciente)" class="text-blue-600 mr-2">
-              👁️
+            <button @click="$emit('view', paciente)" class="text-blue-300 mr-2">
+              Ver
             </button>
             <button
               @click="$emit('edit', paciente)"
-              class="text-yellow-600 mr-2"
+              class="text-yellow-300 mr-2"
             >
-              ✏️
+              Editar
             </button>
-            <button @click="confirmDelete(paciente)" class="text-red-600">
-              🗑️
+            <button @click="confirmDelete(paciente)" class="text-red-500">
+              Excluir
             </button>
           </td>
         </tr>
@@ -49,7 +49,7 @@
     <ConfirmDialog
       v-if="pacienteToDelete"
       title="Excluir paciente"
-      message="Tem certeza que deseja excluir esta paciente?"
+      message="Tem certeza que deseja excluir este paciente?"
       @confirm="deletePaciente"
       @cancel="pacienteToDelete = null"
     />

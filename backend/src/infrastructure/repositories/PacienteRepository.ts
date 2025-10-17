@@ -37,7 +37,6 @@ export class PacienteRepository implements IPacienteRepository {
     return paciente;
   }
   async findAllByNutricionistaId(id: string): Promise<Paciente[]> {
-    const allDocs = await this.collection.find().toArray();
     const documents = await this.collection
       .find({ idNutricionista: id })
       .toArray();

@@ -35,8 +35,7 @@ import Rodape from "../components/layout/Rodape.vue";
 
 .page-content {
   flex: 1;
-  padding: 1.5rem;
-  background-color: #f3f4f6;
+  padding: 1.5rem;  
   overflow-y: auto;
 }
 </style>

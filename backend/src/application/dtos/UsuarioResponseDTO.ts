@@ -6,7 +6,9 @@ export class UsuarioResponseDTO {
     public readonly name: string,
     public readonly email: string,
     public readonly user: string,
-    public readonly idNutricionista: string
+    public readonly idNutricionista: string,
+    public readonly isPaciente: boolean,
+    public readonly isNutricionista: boolean
   ) {}
 
   // Método estático para criar DTO a partir da entidade User
@@ -16,7 +18,9 @@ export class UsuarioResponseDTO {
       user.name,
       user.email,
       user.user,
-      user.idNutricionista
+      user.idNutricionista,
+      user.isNutricionista,
+      user.isPaciente
     );
   }
 }

@@ -1,6 +1,8 @@
 <template>
   <footer class="footer">
-    <p>© 2025 - Feito com Vue.js 💚</p>
+    <p>
+      © 2025 - Artur Benedetti, Felipe Modena, Guilherme Frank e Henrique Jacobi
+    </p>
   </footer>
 </template>
 

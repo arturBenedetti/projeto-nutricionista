@@ -71,7 +71,7 @@ async function save() {
 </script>
 
 <template>
-  <form @submit.prevent="save" class="max-w-md bg-[#111827] shadow rounded p-4">
+  <form @submit.prevent="save" class="bg-[#111827] shadow rounded p-4">
     <h2 class="text-lg font-semibold mb-4">
       {{ paciente?.id ? "Editar Paciente" : "Novo Paciente" }}
     </h2>

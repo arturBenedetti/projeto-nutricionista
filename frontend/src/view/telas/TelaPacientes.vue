@@ -60,7 +60,7 @@ function onSaved() {
 
 <style scoped>
 div {
-  background-color: black;
+  background-color: #111827;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
