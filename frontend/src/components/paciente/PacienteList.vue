@@ -12,23 +12,30 @@
 
     <LoadingSpinner v-if="loading" />
 
-    <table v-else class="min-w-full bg-white shadow rounded">
-      <thead class="bg-gray-100">
+    <table v-else class="min-w-full bg-black shadow rounded">
+      <thead class="bg-gray-700">
         <tr>
           <th class="p-2 text-left">Nome</th>
-          <th class="p-2 text-left">email</th>
+          <th class="p-2 text-left">Email</th>
           <th class="p-2 text-left">Ações</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="paciente in people" :key="paciente.id" class="border-b">
+        <tr
+          v-for="paciente in pacientes"
+          :key="paciente.id"
+          class="border-b"
+        >
           <td class="p-2">{{ paciente.nome }}</td>
           <td class="p-2">{{ paciente.email }}</td>
           <td class="p-2">
             <button @click="$emit('view', paciente)" class="text-blue-600 mr-2">
               👁️
             </button>
-            <button @click="$emit('edit', paciente)" class="text-yellow-600 mr-2">
+            <button
+              @click="$emit('edit', paciente)"
+              class="text-yellow-600 mr-2"
+            >
               ✏️
             </button>
             <button @click="confirmDelete(paciente)" class="text-red-600">
@@ -41,8 +48,8 @@
 
     <ConfirmDialog
       v-if="pacienteToDelete"
-      title="Excluir pessoa"
-      message="Tem certeza que deseja excluir esta pessoa?"
+      title="Excluir paciente"
+      message="Tem certeza que deseja excluir esta paciente?"
       @confirm="deletePaciente"
       @cancel="pacienteToDelete = null"
     />
@@ -53,6 +60,7 @@
 import { ref, onMounted } from "vue";
 import ConfirmDialog from "../../components/shared/ConfirmDialog.vue";
 import LoadingSpinner from "../../components/shared/LoadingSpinner.vue";
+import { loggedUser } from "../../services/UsuarioService";
 
 const pacientes = ref([]);
 const loading = ref(true);
@@ -61,9 +69,18 @@ const pacienteToDelete = ref(null);
 onMounted(fetchData);
 
 async function fetchData() {
-  // loading.value = true;
-  // pacientes.value = await pacienteService.getAll();
-  // loading.value = false;
+  loading.value = true;
+  const response = await window.api.listarPacientes({
+    idNutricionista: loggedUser.value.id,
+  });
+
+  if (response && response.pacientes) {
+    pacientes.value = response.pacientes;
+  } else {
+    console.error("Erro ao listar pacientes:", response);
+  }
+
+  loading.value = false;
 }
 
 function confirmDelete(paciente) {
@@ -71,7 +88,7 @@ function confirmDelete(paciente) {
 }
 
 async function deletePaciente() {
-  await pacienteService.remove(pacienteToDelete.value.id);
+  //remover Paciente
   pacienteToDelete.value = null;
   fetchData();
 }

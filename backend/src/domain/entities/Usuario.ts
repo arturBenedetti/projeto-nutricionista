@@ -1,10 +1,13 @@
-export class User {
+export class Usuario {
   constructor(
     public readonly id: string,
     public name: string,
     public email: string,
     public user: string,
-    private _password: string // Senha agora é privada
+    private _password: string, // Senha agora é privada
+    public idNutricionista: string,
+    public isPaciente: boolean,
+    public isNutricionista: boolean
   ) {}
 
   // Getter para a senha (apenas para uso interno)
@@ -18,7 +21,9 @@ export class User {
       id: this.id,
       name: this.name,
       email: this.email,
-      user: this.user
+      user: this.user,
+      isPaciente: this.isPaciente,
+      isNutricionista: this.isNutricionista,
     };
   }
 

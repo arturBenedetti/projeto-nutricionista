@@ -4,11 +4,11 @@ const path = require("path");
 const { connectMongo } = require("../backend/dist/infrastructure/db/mongo");
 
 const {
-  UserRepository,
-} = require("../backend/dist/infrastructure/repositories/UserRepository");
+  UsuarioRepository,
+} = require("../backend/dist/infrastructure/repositories/UsuarioRepository");
 const {
-  UserController,
-} = require("../backend/dist/application/controllers/UserController");
+  UsuarioController,
+} = require("../backend/dist/application/controllers/UsuarioController");
 const { registerUserIPC } = require("../backend/dist/application/ipc/UserIPC");
 
 const {
@@ -48,8 +48,8 @@ async function createWindow() {
   // Configura backend
   const db = await connectMongo();
 
-  const userRepo = new UserRepository(db);
-  const userController = new UserController(userRepo);
+  const userRepo = new UsuarioRepository(db);
+  const userController = new UsuarioController(userRepo);
 
   const loginRepo = new LoginRepository(db);
   const loginController = new LoginController(loginRepo);

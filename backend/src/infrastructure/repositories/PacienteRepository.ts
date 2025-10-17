@@ -36,7 +36,27 @@ export class PacienteRepository implements IPacienteRepository {
     await this.collection.insertOne(pacienteDoc);
     return paciente;
   }
+  async findAllByNutricionistaId(id: string): Promise<Paciente[]> {
+    const allDocs = await this.collection.find().toArray();
+    const documents = await this.collection
+      .find({ idNutricionista: id })
+      .toArray();
 
+    return documents.map(
+      (doc) =>
+        new Paciente(
+          doc._id,
+          doc.idNutricionista,
+          doc.nome,
+          doc.sexo,
+          doc.email,
+          doc.dataNascimento,
+          doc.peso,
+          doc.altura,
+          doc.anamnese
+        )
+    );
+  }
   async findAll(): Promise<Paciente[]> {
     const documents = await this.collection.find().toArray();
     return documents.map(
