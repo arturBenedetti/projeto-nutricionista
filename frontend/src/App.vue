@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import { onMounted } from "vue";
+import { ref, onMounted, provide } from "vue";
 import router from "./router";
 
 onMounted(() => {
