@@ -1,10 +1,10 @@
-import { User } from "../entities/User";
-import { IUserRepository } from "../../application/interfaces/IUserRepository";
+import { Usuario } from "../entities/Usuario";
+import { IUsuarioRepository } from "../../application/interfaces/IUsuarioRepository";
 
 export class ListUsersUseCase {
-  constructor(private userRepo: IUserRepository) {}
+  constructor(private usuarioRepo: IUsuarioRepository) {}
 
-  async execute(): Promise<User[]> {
-    return await this.userRepo.findAll();
+  async execute(): Promise<Usuario[]> {
+    return await this.usuarioRepo.findAll();
   }
 }

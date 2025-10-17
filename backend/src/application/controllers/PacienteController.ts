@@ -4,16 +4,15 @@ import { CriarPacienteDTO } from "../dtos/CriarPacienteDTO";
 import { CriarPacienteResponseDTO } from "../dtos/CriarPacienteResponseDTO";
 
 export class PacienteController {
-  private createPaciente: CreatePacienteUseCase;
+  private createPacienteUseCase: CreatePacienteUseCase;
 
   constructor(pacienteRepo: IPacienteRepository) {
-    this.createPaciente = new CreatePacienteUseCase(pacienteRepo);
+    this.createPacienteUseCase = new CreatePacienteUseCase(pacienteRepo);
   }
 
   async criarPaciente(
     dto: CriarPacienteDTO
-  ): Promise<CriarPacienteResponseDTO> {
-    const paciente = await this.createPaciente.criarPaciente(dto);
-    return CriarPacienteResponseDTO.fromPaciente(paciente);
+  ): Promise<CriarPacienteResponseDTO | null> {
+    return await this.createPacienteUseCase.criarPaciente(dto);
   }
 }
