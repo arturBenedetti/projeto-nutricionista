@@ -1,4 +1,4 @@
-const { contextBridge, ipcRenderer } = require("electron");
+const { contextBridge, ipcRenderer } = require("electron")
 
 contextBridge.exposeInMainWorld("api", {
   // User
@@ -12,4 +12,8 @@ contextBridge.exposeInMainWorld("api", {
   consultarDados: (data) => ipcRenderer.invoke("consultarDados", data),
   listarPacientes: (data) => ipcRenderer.invoke("listarPacientes", data),
   excluirPaciente: (data) => ipcRenderer.invoke("excluirPaciente", data),
-});
+  // Dieta
+  criarDieta: (data) => ipcRenderer.invoke("criar-dieta", data),
+  listarDietas: (data) => ipcRenderer.invoke("listar-dietas", data),
+  consultarDieta: (data) => ipcRenderer.invoke("consultar-dieta", data),
+})
