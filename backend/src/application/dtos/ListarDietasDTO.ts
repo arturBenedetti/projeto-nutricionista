@@ -1,3 +1,3 @@
-export class ListarDietasDTO {
-  constructor(public readonly idNutricionista: string) {}
+export interface ListarDietasDTO {
+  idNutricionista: string
 }

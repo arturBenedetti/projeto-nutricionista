@@ -1,6 +1,8 @@
 export interface CriarDietaDTO {
-  idDieta: number
+  idNutricionista: string
+  idPaciente: string
   dataInicio: string
   dataFim: string
   descricao: string
+  observacoes?: string
 }

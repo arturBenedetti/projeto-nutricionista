@@ -1,37 +1,45 @@
-const { app, BrowserWindow } = require("electron");
-const path = require("path");
+const { app, BrowserWindow } = require("electron")
+const path = require("path")
 
-const { connectMongo } = require("../backend/dist/infrastructure/db/mongo");
+const { connectMongo } = require("../backend/dist/infrastructure/db/mongo")
 
 const {
   UsuarioRepository,
-} = require("../backend/dist/infrastructure/repositories/UsuarioRepository");
+} = require("../backend/dist/infrastructure/repositories/UsuarioRepository")
 const {
   UsuarioController,
-} = require("../backend/dist/application/controllers/UsuarioController");
-const { registerUserIPC } = require("../backend/dist/application/ipc/UserIPC");
+} = require("../backend/dist/application/controllers/UsuarioController")
+const { registerUserIPC } = require("../backend/dist/application/ipc/UserIPC")
 
 const {
   LoginRepository,
-} = require("../backend/dist/infrastructure/repositories/LoginRepository");
+} = require("../backend/dist/infrastructure/repositories/LoginRepository")
 const {
   LoginController,
-} = require("../backend/dist/application/controllers/LoginController");
-const { loginIPC } = require("../backend/dist/application/ipc/LoginIPC");
+} = require("../backend/dist/application/controllers/LoginController")
+const { loginIPC } = require("../backend/dist/application/ipc/LoginIPC")
 
 const {
   PacienteRepository,
-} = require("../backend/dist/infrastructure/repositories/PacienteRepository");
+} = require("../backend/dist/infrastructure/repositories/PacienteRepository")
 const {
   PacienteController,
-} = require("../backend/dist/application/controllers/PacienteController");
-const { pacienteIPC } = require("../backend/dist/application/ipc/PacienteIPC");
+} = require("../backend/dist/application/controllers/PacienteController")
+const { pacienteIPC } = require("../backend/dist/application/ipc/PacienteIPC")
+
+const {
+  DietaRepository,
+} = require("../backend/dist/infrastructure/repositories/DietaRepository")
+const {
+  DietaController,
+} = require("../backend/dist/application/controllers/DietaController")
+const { dietaIPC } = require("../backend/dist/application/ipc/DietaIPC")
 
 require("electron-reload")(__dirname, {
   electron: require(`${__dirname}/node_modules/electron`),
-});
+})
 
-let mainWindow;
+let mainWindow
 
 async function createWindow() {
   mainWindow = new BrowserWindow({
@@ -43,37 +51,41 @@ async function createWindow() {
       contextIsolation: true,
       nodeIntegration: false,
     },
-  });
+  })
 
   // Configura backend
-  const db = await connectMongo();
+  const db = await connectMongo()
 
-  const userRepo = new UsuarioRepository(db);
-  const userController = new UsuarioController(userRepo);
+  const userRepo = new UsuarioRepository(db)
+  const userController = new UsuarioController(userRepo)
 
-  const loginRepo = new LoginRepository(db);
-  const loginController = new LoginController(loginRepo);
+  const loginRepo = new LoginRepository(db)
+  const loginController = new LoginController(loginRepo)
 
-  const pacienteRepo = new PacienteRepository(db);
-  const pacienteController = new PacienteController(pacienteRepo);
+  const pacienteRepo = new PacienteRepository(db)
+  const pacienteController = new PacienteController(pacienteRepo)
+
+  const dietaRepo = new DietaRepository(db)
+  const dietaController = new DietaController(dietaRepo)
 
   // Registra IPCs
-  registerUserIPC(userController);
-  loginIPC(loginController);
-  pacienteIPC(pacienteController);
+  registerUserIPC(userController)
+  loginIPC(loginController)
+  pacienteIPC(pacienteController)
+  dietaIPC(dietaController)
 
-  mainWindow.loadURL("http://localhost:5173");
-  return mainWindow;
+  mainWindow.loadURL("http://localhost:5173")
+  return mainWindow
 }
 
 app.on("ready", () => {
-  createWindow();
+  createWindow()
 
   app.on("activate", () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
-  });
-});
+    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+  })
+})
 
 app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") app.quit();
-});
+  if (process.platform !== "darwin") app.quit()
+})

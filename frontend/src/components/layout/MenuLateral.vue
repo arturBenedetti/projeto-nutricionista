@@ -1,5 +1,5 @@
 <script setup>
-import { loggedUser } from "../../services/UsuarioService";
+import { loggedUser } from "../../services/UsuarioService"
 </script>
 
 <template>
@@ -15,6 +15,14 @@ import { loggedUser } from "../../services/UsuarioService";
             to="/pacientes"
             exact-active-class="active"
             >Pacientes</router-link
+          >
+        </li>
+        <li>
+          <router-link
+            v-if="loggedUser.isNutricionista"
+            to="/dietas"
+            exact-active-class="active"
+            >Dietas</router-link
           >
         </li>
         <li>
