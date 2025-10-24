@@ -1,27 +1,25 @@
 import { Usuario } from "../entities/Usuario";
 import { IUsuarioRepository } from "../../application/interfaces/IUsuarioRepository";
 import { CriarUsuarioDTO } from "../../application/dtos/CriarUsuarioDTO";
-import bcrypt from "bcrypt";
-import { v4 as uuidv4 } from "uuid";
+import { IUsuarioService } from "../services/IUsuarioService";
 
 export class CreateUserUseCase {
-  constructor(private userRepo: IUsuarioRepository) {}
+  constructor(
+    private userRepo: IUsuarioRepository,
+    private usuarioService: IUsuarioService
+  ) {}
 
-  async execute(data: CriarUsuarioDTO): Promise<Usuario> {
-    // Hash da senha com salt rounds = 12
-    const hashedPassword = await bcrypt.hash(data.password, 12);
-    const selfId = uuidv4();
-
-    const newUser = new Usuario(
-      selfId,
-      data.name,
-      data.email,
-      data.user,
-      hashedPassword,
-      data.isPaciente ? selfId : "", //Se o nutricionista deseja utilizar o sistema como paciente
-      data.isPaciente,
-      true
-    );
-    return await this.userRepo.save(newUser);
+  async execute(dto: CriarUsuarioDTO): Promise<Usuario | null> {
+    const newUser = await this.usuarioService.createUsuario({
+      idNutricionista: "",
+      name: dto.name,
+      email: dto.email,
+      user: dto.user,
+      password: dto.password,
+      isPaciente: dto.isPaciente,
+      isNutricionista: true,
+    });   
+    
+    return await newUser;
   }
 }

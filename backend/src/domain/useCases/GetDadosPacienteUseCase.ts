@@ -6,7 +6,7 @@ export class GetDadosPacienteUseCase {
 
   async consultarDados(id: string): Promise<Paciente | null> {
     try {
-      return await this.pacienteRepo.findById(id);
+      return await this.pacienteRepo.findByUsuarioId(id);
     } catch (error) {
       console.error("Erro durante a busca do paciente:", error);
       return null;

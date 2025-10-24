@@ -3,6 +3,7 @@ import { Paciente } from "../../domain/entities/Paciente";
 export class ConsultarPacienteResponseDTO {
     constructor(
         public readonly id: string,
+        public readonly idUsuario: string,
         public readonly nome: string,
         public readonly sexo: string,
         public readonly email: string,
@@ -18,6 +19,7 @@ export class ConsultarPacienteResponseDTO {
 
         return new ConsultarPacienteResponseDTO(
             paciente.id,
+            paciente.idUsuario,
             paciente.nome,
             paciente.sexo,
             paciente.email,

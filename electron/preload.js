@@ -8,8 +8,10 @@ contextBridge.exposeInMainWorld("api", {
   login: (data) => ipcRenderer.invoke("login", data),
   // Paciente
   criarPaciente: (data) => ipcRenderer.invoke("criarPaciente", data),
+  editarPaciente: (data) => ipcRenderer.invoke("editarPaciente", data),
   consultarDados: (data) => ipcRenderer.invoke("consultarDados", data),
   listarPacientes: (data) => ipcRenderer.invoke("listarPacientes", data),
+  excluirPaciente: (data) => ipcRenderer.invoke("excluirPaciente", data),
   // Dieta
   criarDieta: (data) => ipcRenderer.invoke("criar-dieta", data),
   listarDietas: (data) => ipcRenderer.invoke("listar-dietas", data),

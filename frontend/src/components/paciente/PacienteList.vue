@@ -87,9 +87,24 @@ function confirmDelete(paciente) {
   pacienteToDelete.value = paciente;
 }
 
-async function deletePaciente() {
-  //remover Paciente
-  pacienteToDelete.value = null;
-  fetchData();
+async function deletePaciente() {  
+  try {
+    const sucesso = await window.api.excluirPaciente({
+      id: pacienteToDelete.value.id
+    });
+    
+    if (sucesso) {
+      console.log("Paciente excluído com sucesso");
+      fetchData(); // Recarregar a lista
+    } else {
+      console.error("Erro ao excluir paciente");
+      alert("Erro ao excluir paciente");
+    }
+  } catch (error) {
+    console.error("Erro ao excluir paciente:", error);
+    alert("Erro ao excluir paciente: " + error.message);
+  } finally {
+    pacienteToDelete.value = null;
+  }
 }
 </script>

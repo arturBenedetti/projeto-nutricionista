@@ -17,7 +17,11 @@
       @saved="onSaved"
     />
 
-    <PacienteView v-if="viewMode" :paciente="selectedPaciente" @close="onCancel" />
+    <PacienteView
+      v-if="viewMode"
+      :paciente="selectedPaciente"
+      @close="onCancel"
+    />
   </div>
 </template>
 
@@ -38,7 +42,15 @@ function onAdd() {
 }
 
 function onEdit(paciente) {
-  selectedPaciente.value = paciente;
+  selectedPaciente.value = { ...paciente };
+  // Converter a data para o formato YYYY-MM-DD que o input date espera
+  if (selectedPaciente.value.dataNascimento instanceof Date) {
+    selectedPaciente.value.dataNascimento = selectedPaciente.value.dataNascimento.toISOString().split('T')[0];
+  } else if (typeof selectedPaciente.value.dataNascimento === 'string') {
+    // Se já for string, converter de ISO para YYYY-MM-DD
+    const date = new Date(selectedPaciente.value.dataNascimento);
+    selectedPaciente.value.dataNascimento = date.toISOString().split('T')[0];
+  }
   showForm.value = true;
 }
 

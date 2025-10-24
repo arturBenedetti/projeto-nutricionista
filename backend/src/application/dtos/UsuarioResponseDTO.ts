@@ -12,7 +12,11 @@ export class UsuarioResponseDTO {
   ) {}
 
   // Método estático para criar DTO a partir da entidade User
-  static fromUsuario(user: Usuario): UsuarioResponseDTO {
+  static fromUsuario(user: Usuario | null): UsuarioResponseDTO | null {
+    if (!user) {
+      return null;
+    }
+
     return new UsuarioResponseDTO(
       user.id,
       user.name,

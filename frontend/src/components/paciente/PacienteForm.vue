@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { loggedUser } from "../../services/UsuarioService";
 
 const props = defineProps({ paciente: Object });
@@ -50,23 +50,40 @@ watch(
   { immediate: true }
 );
 
+function parseLocalDate(dateStr) {
+  const [year, month, day] = dateStr.split("-").map(Number);
+
+  return new Date(year, month - 1, day);
+}
+
 async function save() {
   if (localPaciente.value.id) {
-    // Update existing paciente
+    const pacienteEditado = {
+      id: localPaciente.value.id,
+      nome: localPaciente.value.nome,
+      sexo: localPaciente.value.sexo,
+      email: localPaciente.value.email,
+      dataNascimento: parseLocalDate(localPaciente.value.dataNascimento),
+      peso: localPaciente.value.peso,
+      altura: localPaciente.value.altura,
+      anamnese: localPaciente.value.anamnese,
+    };
+    await window.api.editarPaciente(pacienteEditado);
+    emit("saved");
   } else {
     const novoPaciente = {
       idNutricionista: loggedUser.value.id,
       nome: localPaciente.value.nome,
       sexo: localPaciente.value.sexo,
       email: localPaciente.value.email,
-      dataNascimento: localPaciente.value.dataNascimento,
+      dataNascimento: parseLocalDate(localPaciente.value.dataNascimento),
       peso: localPaciente.value.peso,
       altura: localPaciente.value.altura,
       anamnese: localPaciente.value.anamnese,
     };
     await window.api.criarPaciente(novoPaciente);
+    emit("saved");
   }
-  emit("saved");
 }
 </script>
 

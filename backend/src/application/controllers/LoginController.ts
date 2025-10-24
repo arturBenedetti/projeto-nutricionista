@@ -10,7 +10,7 @@ export class LoginController {
     this.loginUseCase = new LoginUseCase(loginRepo);
   }
 
-  async login(data: LoginDTO): Promise<UsuarioResponseDTO> {
+  async login(data: LoginDTO): Promise<UsuarioResponseDTO | null> {
     const user = await this.loginUseCase.login(data);
     if (!user) {
       throw new Error("Usuário ou senha inválidos");
