@@ -40,6 +40,16 @@
         v-model="form.confirmPassword"
       />
     </div>
+    <div class="linha-input checkbox-container">
+      <label class="checkbox-label">
+        <input
+          type="checkbox"
+          v-model="form.isPaciente"
+          class="checkbox-input"
+        />
+        <span class="checkbox-text">Sou um paciente</span>
+      </label>
+    </div>
     <button label="Cadastrar" @click="submitForm">Cadastrar</button>
     <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
     <p v-if="successMessage" class="success">{{ successMessage }}</p>
@@ -63,6 +73,7 @@ const form = ref({
   user: "",
   password: "",
   confirmPassword: "",
+  isPaciente: false,
 });
 
 const isFormValid = () => {
@@ -88,6 +99,7 @@ const submitForm = () => {
       email: form.value.email,
       user: form.value.user,
       password: form.value.password,
+      isPaciente: form.value.isPaciente,
     })
     .then(() => {
       successMessage.value = `Conta criada com sucesso para ${form.value.name}!`;
@@ -99,6 +111,7 @@ const submitForm = () => {
       form.value.user = "";
       form.value.password = "";
       form.value.confirmPassword = "";
+      form.value.isPaciente = false;
     })
     .catch((err) => {
       errorMessage.value = `Erro ao criar conta: ${err.message}`;
@@ -162,5 +175,30 @@ h2 {
 
 .login-link-text:hover {
   color: #008a82;
+}
+
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  margin-top: 15px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+}
+
+.checkbox-input {
+  margin-right: 8px;
+  width: 16px;
+  height: 16px;
+  accent-color: #00b5ad;
+}
+
+.checkbox-text {
+  user-select: none;
 }
 </style>
