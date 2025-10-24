@@ -2,7 +2,10 @@ import { Paciente } from "../../domain/entities/Paciente";
 
 export interface IPacienteRepository {
   save(Paciente: Paciente): Promise<Paciente>;
-  findAllByNutricionistaId(idNutricionista: string): Promise<Paciente[]>;
+  update(Paciente: Paciente): Promise<Paciente>;
+  delete(id: string): Promise<boolean>;
   findAll(): Promise<Paciente[]>;
   findById(id: string): Promise<Paciente | null>;
+  findAllByNutricionistaId(idNutricionista: string): Promise<Paciente[]>;
+  findByUsuarioId(id: string): Promise<Paciente | null>;
 }

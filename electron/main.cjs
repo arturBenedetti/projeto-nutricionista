@@ -1,11 +1,37 @@
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, screen } = require("electron");
+const fs = require("fs");
 const path = require("path");
+
+const stateFile = path.join(app.getPath("userData"), "window-state.json");
+function readWindowState() {
+  try {
+    return JSON.parse(fs.readFileSync(stateFile, "utf8"));
+  } catch {
+    // Primeira execução → sem arquivo salvo
+    return null;
+  }
+}
+
+function saveWindowState(win) {
+  if (!win) return;
+
+  const bounds = win.getBounds();
+  const isMaximized = win.isMaximized();
+  const isFullScreen = win.isFullScreen();
+
+  const state = { bounds, isMaximized, isFullScreen };
+
+  fs.writeFileSync(stateFile, JSON.stringify(state));
+}
 
 const { connectMongo } = require("../backend/dist/infrastructure/db/mongo");
 
 const {
   UsuarioRepository,
 } = require("../backend/dist/infrastructure/repositories/UsuarioRepository");
+const {
+  UsuarioService,
+} = require("../backend/dist/infrastructure/services/UsuarioService");
 const {
   UsuarioController,
 } = require("../backend/dist/application/controllers/UsuarioController");
@@ -34,9 +60,14 @@ require("electron-reload")(__dirname, {
 let mainWindow;
 
 async function createWindow() {
+  const savedState = readWindowState();
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+
   mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    x: savedState?.bounds?.x ?? undefined,
+    y: savedState?.bounds?.y ?? undefined,
+    width: savedState?.bounds?.width ?? 1280,
+    height: savedState?.bounds?.height ?? 720,
     resizable: true,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
@@ -49,13 +80,17 @@ async function createWindow() {
   const db = await connectMongo();
 
   const userRepo = new UsuarioRepository(db);
+  const usuarioService = new UsuarioService(userRepo);
   const userController = new UsuarioController(userRepo);
 
   const loginRepo = new LoginRepository(db);
   const loginController = new LoginController(loginRepo);
 
   const pacienteRepo = new PacienteRepository(db);
-  const pacienteController = new PacienteController(pacienteRepo);
+  const pacienteController = new PacienteController(
+    pacienteRepo,
+    usuarioService
+  );
 
   // Registra IPCs
   registerUserIPC(userController);
@@ -63,6 +98,17 @@ async function createWindow() {
   pacienteIPC(pacienteController);
 
   mainWindow.loadURL("http://localhost:5173");
+
+  if (!savedState) {
+    mainWindow.maximize();
+  } else if (savedState.isMaximized) {
+    mainWindow.maximize();
+  } else if (savedState.isFullScreen) {
+    mainWindow.setFullScreen(true);
+  }
+
+  mainWindow.on("close", () => saveWindowState(mainWindow));
+
   return mainWindow;
 }
 

@@ -14,6 +14,7 @@ export class ListarPacientesResponseDTO {
       (paciente) =>
         new PacienteDTO(
           paciente.id,
+          paciente.idUsuario,
           paciente.idNutricionista,
           paciente.nome,
           paciente.sexo,
@@ -21,7 +22,8 @@ export class ListarPacientesResponseDTO {
           paciente.dataNascimento,
           paciente.peso,
           paciente.altura,
-          paciente.anamnese
+          paciente.anamnese,
+          paciente.peso / ((paciente.altura * paciente.altura) / 10000)
         )
     );
 
@@ -32,6 +34,7 @@ export class ListarPacientesResponseDTO {
 export class PacienteDTO {
   constructor(
     public readonly id: string,
+    public readonly idUsuario: string,
     public idNutricionista: string,
     public nome: string,
     public sexo: string,
@@ -39,6 +42,7 @@ export class PacienteDTO {
     public dataNascimento: Date,
     public peso: number,
     public altura: number,
-    public anamnese: string
+    public anamnese: string,
+    public imc: number
   ) {}
 }

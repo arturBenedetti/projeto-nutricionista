@@ -51,4 +51,21 @@ export class UsuarioRepository implements IUsuarioRepository {
         )
     );
   }
+  async findByEmail(email: string): Promise<Usuario | null> {
+    const doc = await this.collection.findOne({ email: email });
+    if (!doc) {
+      return null;
+    }
+
+    return new Usuario(
+      doc._id.toString(),
+      doc.name,
+      doc.email,
+      doc.user,
+      doc.password || "",
+      doc.idNutricionista,
+      doc.isPaciente,
+      doc.isNutricionista
+    );
+  }
 }

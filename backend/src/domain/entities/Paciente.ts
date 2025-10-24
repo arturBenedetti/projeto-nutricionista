@@ -1,6 +1,7 @@
 export class Paciente {
   constructor(
     public readonly id: string,
+    public readonly idUsuario: string,
     public idNutricionista: string,
     public nome: string,
     public sexo: string,
