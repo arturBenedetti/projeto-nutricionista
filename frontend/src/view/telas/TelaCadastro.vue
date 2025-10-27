@@ -1,62 +1,65 @@
 ﻿<template>
-  <div class="register-form">
-    <h2>Cadastro de Conta</h2>
-    <div>
-      <input
-        label="Nome Completo"
-        placeholder="Digite seu nome"
-        v-model="form.name"
-      />
-    </div>
-    <div class="linha-input">
-      <input
-        label="Email"
-        type="email"
-        placeholder="Digite seu email"
-        v-model="form.email"
-      />
-    </div>
-    <div class="linha-input">
-      <input
-        label="Usuário"
-        type="user"
-        placeholder="Escolha um usuário"
-        v-model="form.user"
-      />
-    </div>
-    <div class="linha-input">
-      <input
-        label="Senha"
-        type="password"
-        placeholder="Digite sua senha"
-        v-model="form.password"
-      />
-    </div>
-    <div class="linha-input">
-      <input
-        label="Confirmar Senha"
-        type="password"
-        placeholder="Confirme sua senha"
-        v-model="form.confirmPassword"
-      />
-    </div>
-    <div class="linha-input checkbox-container">
-      <label class="checkbox-label">
+  <div class="container">
+    <img src="../../assets/caduceu.png" />
+    <div class="register-form">
+      <h2>Cadastro de Nutricionista</h2>
+      <div class="linha-input">
         <input
-          type="checkbox"
-          v-model="form.isPaciente"
-          class="checkbox-input"
+          label="Nome Completo"
+          placeholder="Digite seu nome"
+          v-model="form.name"
         />
-        <span class="checkbox-text">Sou um paciente</span>
-      </label>
+      </div>
+      <div class="linha-input">
+        <input
+          label="Email"
+          type="email"
+          placeholder="Digite seu email"
+          v-model="form.email"
+        />
+      </div>
+      <div class="linha-input">
+        <input
+          label="Usuário"
+          type="user"
+          placeholder="Escolha um usuário"
+          v-model="form.user"
+        />
+      </div>
+      <div class="linha-input">
+        <input
+          label="Senha"
+          type="password"
+          placeholder="Digite sua senha"
+          v-model="form.password"
+        />
+      </div>
+      <div class="linha-input">
+        <input
+          label="Confirmar Senha"
+          type="password"
+          placeholder="Confirme sua senha"
+          v-model="form.confirmPassword"
+        />
+      </div>
+      <div class="linha-input checkbox-container">
+        <label class="checkbox-label">
+          <input
+            type="checkbox"
+            v-model="form.isPaciente"
+            class="checkbox-input"
+          />
+          <span class="checkbox-text">Sou um paciente</span>
+        </label>
+      </div>
+      <button label="Cadastrar" @click="submitForm">Cadastrar</button>
+      <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
+      <p v-if="successMessage" class="success">{{ successMessage }}</p>
+      <p class="login-link">
+        Já possui uma conta?
+        <span @click="navigateToLogin" class="login-link-text">Faça login</span>
+      </p>
     </div>
-    <button label="Cadastrar" @click="submitForm">Cadastrar</button>
-    <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
-    <p v-if="successMessage" class="success">{{ successMessage }}</p>
-    <p class="login-link">
-      Já possui uma conta?
-      <span @click="navigateToLogin" class="login-link-text">Faça login</span>
-    </p>
   </div>
 </template>
 
@@ -127,9 +130,26 @@ const navigateToLogin = () => {
 <style scoped>
 @import "tailwindcss";
 
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100vh;
+}
+
+img {
+  width: 200px;
+  height: 200px;
+}
+
 .register-form {
-  max-width: 400px;
-  margin: auto;
+  max-width: 400px;  
   padding: 20px;
   border: 1px solid #00b5ad;
   border-radius: 6px;
@@ -138,6 +158,7 @@ const navigateToLogin = () => {
 
 input {
   @apply bg-teal-500/20 border border-teal-500 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent gap-1;
+  width: 100%;
 }
 .linha-input {
   margin-top: 15px;
@@ -180,6 +201,7 @@ h2 {
 .checkbox-container {
   display: flex;
   align-items: center;
+  justify-content: center;
   margin-top: 15px;
 }
 
@@ -199,6 +221,7 @@ h2 {
 }
 
 .checkbox-text {
+  color: #00b5ad;
   user-select: none;
 }
 </style>

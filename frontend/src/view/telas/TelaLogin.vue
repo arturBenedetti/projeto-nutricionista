@@ -33,7 +33,8 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { loggedUser, setLoggedUser } from "../../services/UsuarioService";
+import { setAuth } from "../../services/UsuarioService";
+import { LoginResponseDTO } from "../../services/AuthService";
 
 const router = useRouter();
 const usuario = ref("");
@@ -56,10 +57,13 @@ const handleLogin = async () => {
       password: senha.value,
     });
 
-    if (resultado) {
-      // Login bem-sucedido
-      setLoggedUser(resultado);
-    
+    if (resultado && resultado.user && resultado.token && resultado.expiresAt) {
+      // Parse expiresAt string to Date
+      const expiresAt = new Date(resultado.expiresAt);
+
+      // Login bem-sucedido - salvar user, token e expiração
+      setAuth(resultado.user, resultado.token, expiresAt);
+
       router.push("/principal");
     } else {
       erroLogin.value = "Usuário ou senha inválidos";
