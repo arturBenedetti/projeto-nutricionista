@@ -1,5 +1,6 @@
 import { LoginUseCase } from "../../domain/useCases/LoginUseCase";
 import { LoginDTO } from "../dtos/LoginDTO";
+import { ChangePasswordDTO } from "../dtos/ChangePasswordDTO";
 import { ILoginRepository } from "../interfaces/ILoginRepository";
 import { UsuarioResponseDTO } from "../dtos/UsuarioResponseDTO";
 import { LoginResponseDTO } from "../dtos/LoginResponseDTO";
@@ -44,6 +45,9 @@ export class LoginController {
       token,
       new Date(Date.now() + expiresInMs)
     );
+  }
+  changePassword(data: ChangePasswordDTO): Promise<boolean> {
+    return this.loginUseCase.changePassword(data);
   }
 
   private parseExpirationToMs(expiration: string): number {
