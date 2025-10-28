@@ -66,7 +66,6 @@
 
 <script setup>
 import { ref, computed } from "vue";
-import { changePassword } from "../../services/LoginService";
 import { loggedUser } from "../../services/UsuarioService";
 
 const props = defineProps({
@@ -125,7 +124,7 @@ const handleSubmit = async () => {
   loading.value = true;
 
   try {
-    const success = await changePassword({
+    const success = await window.api.changePassword({
       id: user.value.id,
       oldPassword: form.value.oldPassword,
       newPassword: form.value.newPassword,
@@ -218,7 +217,7 @@ const closeModal = () => {
 
 .form-group label {
   display: block;
-  margin-bottom: 0.5rem;  
+  margin-bottom: 0.5rem;
   font-weight: 500;
   color: #ffffff;
 }
@@ -239,7 +238,7 @@ const closeModal = () => {
 }
 
 .form-group input:disabled {
-  background-color: #2f3e53;  
+  background-color: #2f3e53;
   cursor: not-allowed;
 }
 
