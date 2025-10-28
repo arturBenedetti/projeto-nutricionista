@@ -1,0 +1,18 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Electron Main",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "${workspaceFolder}/electron/node_modules/.bin/electron",
+      "args": ["."],
+      "cwd": "${workspaceFolder}/electron",
+      "sourceMaps": true,
+      "outFiles": ["${workspaceFolder}/backend/dist/**/*.js"],
+      "env": {
+        "ELECTRON_ENABLE_LOGGING": "true"
+      }
+    }
+  ]
+}

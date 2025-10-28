@@ -1,24 +1,7 @@
-<template>
-  <!-- <TelaLogin /> -->
-  <TelaCadastro />
+﻿<template>
+  <router-view />
 </template>
 
-<script setup lang="ts">
-import TelaCadastro from "./view/telas/TelaCadastro.vue";
-import TelaLogin from "./view/telas/TelaLogin.vue";
+<script setup>
+// The router will handle navigation based on the current route
 </script>
-
-<style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
-}
-</style>

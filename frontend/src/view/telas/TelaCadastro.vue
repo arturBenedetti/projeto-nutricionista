@@ -1,93 +1,170 @@
-<template>
-  <div class="register-form">
-    <h2>Cadastro de Conta</h2>
-    <div class="linha-input">
-      <Input label="Nome Completo" placeholder="Digite seu nome" v-model="form.name" />
+﻿<template>
+  <div class="container">
+    <img src="../../assets/caduceu.png" />
+    <div class="register-form">
+      <h2>Cadastro de Nutricionista</h2>
+      <div class="linha-input">
+        <input
+          label="Nome Completo"
+          placeholder="Digite seu nome"
+          v-model="form.name"
+        />
+      </div>
+      <div class="linha-input">
+        <input
+          label="Email"
+          type="email"
+          placeholder="Digite seu email"
+          v-model="form.email"
+        />
+      </div>
+      <div class="linha-input">
+        <input
+          label="Usuário"
+          type="user"
+          placeholder="Escolha um usuário"
+          v-model="form.user"
+        />
+      </div>
+      <div class="linha-input">
+        <input
+          label="Senha"
+          type="password"
+          placeholder="Digite sua senha"
+          v-model="form.password"
+        />
+      </div>
+      <div class="linha-input">
+        <input
+          label="Confirmar Senha"
+          type="password"
+          placeholder="Confirme sua senha"
+          v-model="form.confirmPassword"
+        />
+      </div>
+      <div class="linha-input checkbox-container">
+        <label class="checkbox-label">
+          <input
+            type="checkbox"
+            v-model="form.isPaciente"
+            class="checkbox-input"
+          />
+          <span class="checkbox-text">Sou um paciente</span>
+        </label>
+      </div>
+      <button label="Cadastrar" @click="submitForm">Cadastrar</button>
+      <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
+      <p v-if="successMessage" class="success">{{ successMessage }}</p>
+      <p class="login-link">
+        Já possui uma conta?
+        <span @click="navigateToLogin" class="login-link-text">Faça login</span>
+      </p>
     </div>
-    <div class="linha-input">
-      <Input label="Email" type="email" placeholder="Digite seu email" v-model="form.email" />
-    </div>
-    <div class="linha-input">
-      <Input label="Usuário" type="user" placeholder="Escolha um usuário" v-model="form.user" />
-    </div>
-    <div class="linha-input">
-      <Input label="Senha" type="password" placeholder="Digite sua senha" v-model="form.password" />
-    </div>
-    <div class="linha-input">
-      <Input label="Confirmar Senha" type="password" placeholder="Confirme sua senha" v-model="form.confirmPassword" />
-    </div>
-    <Button label="Cadastrar" :color="'teal'" @click="submitForm" />
-    <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
-    <p v-if="successMessage" class="success">{{ successMessage }}</p>
   </div>
 </template>
 
-<script>
-import Input from "../../components/inputs/Input.vue";
-import Button from "../../components/buttons/Button.vue";
+<script setup>
+import { onMounted, ref, computed } from "vue";
+import { useRouter } from "vue-router";
 
-export default {
-  name: "Register",
-  components: { Input, Button },
-  data() {
-    return {
-      form: {
-        name: "",
-        email: "",
-        user: "",
-        password: "",
-        confirmPassword: "",
-      },
-      errorMessage: "",
-      successMessage: "",
-    };
-  },
-  computed: {
-    isFormValid() {
-      return (
-        this.form.name &&
-        this.form.email &&
-        this.form.user &&
-        this.form.password &&
-        this.form.password === this.form.confirmPassword
-      );
-    },
-  },
-  methods: {
-    submitForm() {
-      if (!this.isFormValid) {
-        this.errorMessage = "Preencha todos os campos corretamente.";
-        this.successMessage = "";
-        return;
-      }
+const router = useRouter();
+const errorMessage = ref("");
+const successMessage = ref("");
+const form = ref({
+  name: "",
+  email: "",
+  user: "",
+  password: "",
+  confirmPassword: "",
+  isPaciente: false,
+});
 
-      // Simulando envio de dados
-      this.successMessage = `Conta criada com sucesso para ${this.form.name}!`;
-      this.errorMessage = "";
+const isFormValid = () => {
+  return (
+    form.value.name &&
+    form.value.email &&
+    form.value.user &&
+    form.value.password &&
+    form.value.password === form.value.confirmPassword
+  );
+};
+
+const submitForm = () => {
+  if (!isFormValid()) {
+    errorMessage.value = "Preencha todos os campos corretamente.";
+    successMessage.value = "";
+    return;
+  }
+
+  window.api
+    .createUser({
+      name: form.value.name,
+      email: form.value.email,
+      user: form.value.user,
+      password: form.value.password,
+      isPaciente: form.value.isPaciente,
+    })
+    .then(() => {
+      successMessage.value = `Conta criada com sucesso para ${form.value.name}!`;
+      errorMessage.value = "";
 
       // Limpar o formulário
-      this.form.name = "";
-      this.form.email = "";
-      this.form.user = "";
-      this.form.password = "";
-      this.form.confirmPassword = "";
-    },
-  },
+      form.value.name = "";
+      form.value.email = "";
+      form.value.user = "";
+      form.value.password = "";
+      form.value.confirmPassword = "";
+      form.value.isPaciente = false;
+    })
+    .catch((err) => {
+      errorMessage.value = `Erro ao criar conta: ${err.message}`;
+      successMessage.value = "";
+    });
+};
+
+const navigateToLogin = () => {
+  router.push("/");
 };
 </script>
 
 <style scoped>
-.register-form {
-  max-width: 400px;
-  margin: auto;
-  padding: 20px;
-  border: 1px solid #00B5AD;
-  border-radius: 6px;
-  box-shadow: 0px 0px 10px #00B5AD;
+@import "tailwindcss";
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100vh;
 }
 
+img {
+  width: 200px;
+  height: 200px;
+}
+
+.register-form {
+  max-width: 400px;  
+  padding: 20px;
+  border: 1px solid #00b5ad;
+  border-radius: 6px;
+  box-shadow: 0px 0px 10px #00b5ad;
+}
+
+input {
+  @apply bg-teal-500/20 border border-teal-500 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent gap-1;
+  width: 100%;
+}
 .linha-input {
-  padding-bottom: 10px;
+  margin-top: 15px;
+}
+button {
+  margin-top: 15px;
 }
 
 h2 {
@@ -103,5 +180,48 @@ h2 {
 .success {
   color: green;
   margin-top: 10px;
+}
+
+.login-link {
+  text-align: center;
+  margin-top: 15px;
+  color: #666;
+}
+
+.login-link-text {
+  color: #00b5ad;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.login-link-text:hover {
+  color: #008a82;
+}
+
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+}
+
+.checkbox-input {
+  margin-right: 8px;
+  width: 16px;
+  height: 16px;
+  accent-color: #00b5ad;
+}
+
+.checkbox-text {
+  color: #00b5ad;
+  user-select: none;
 }
 </style>
