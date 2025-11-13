@@ -88,6 +88,15 @@ async function createWindow() {
   // Configura backend
   const db = await connectMongo()
 
+  // Importa dados TACO automaticamente se ainda não existirem
+  try {
+    const { importarTaco } = require("../backend/dist/scripts/importarTaco");
+    await importarTaco(db, true); // silent = true para não poluir o console
+  } catch (error) {
+    // Log do erro mas não impede o sistema de iniciar
+    console.error("Erro ao verificar/importar dados TACO:", error.message);
+  }
+
   const userRepo = new UsuarioRepository(db)    
   const usuarioService = new UsuarioService(userRepo);
   const userController = new UsuarioController(userRepo);
