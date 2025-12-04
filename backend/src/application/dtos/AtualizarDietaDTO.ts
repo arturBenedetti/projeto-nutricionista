@@ -1,6 +1,7 @@
 import { PlanoRefeicaoDTO } from "./PlanoRefeicaoDTO"
 
-export interface CriarDietaDTO {
+export interface AtualizarDietaDTO {
+  id: string
   idNutricionista: string
   idPaciente: string
   dataInicio: string
@@ -9,3 +10,4 @@ export interface CriarDietaDTO {
   observacoes?: string
   planosRefeicao?: PlanoRefeicaoDTO[] // Planos de refeições por dia da semana
 }
+

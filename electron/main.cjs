@@ -62,6 +62,14 @@ const {
 } = require("../backend/dist/application/controllers/DietaController")
 const { dietaIPC } = require("../backend/dist/application/ipc/DietaIPC")
 
+const {
+  AlimentoRepository,
+} = require("../backend/dist/infrastructure/repositories/AlimentoRepository")
+const {
+  AlimentoController,
+} = require("../backend/dist/application/controllers/AlimentoController")
+const { alimentoIPC } = require("../backend/dist/application/ipc/AlimentoIPC")
+
 require("electron-reload")(__dirname, {
   electron: require(`${__dirname}/node_modules/electron`),
 })
@@ -112,11 +120,15 @@ async function createWindow() {
   const dietaRepo = new DietaRepository(db)
   const dietaController = new DietaController(dietaRepo)
 
+  const alimentoRepo = new AlimentoRepository(db)
+  const alimentoController = new AlimentoController(alimentoRepo)
+
   // Registra IPCs
   registerUserIPC(userController)
   loginIPC(loginController)
   pacienteIPC(pacienteController)
   dietaIPC(dietaController)
+  alimentoIPC(alimentoController)
 
   mainWindow.loadURL("http://localhost:5173");
 

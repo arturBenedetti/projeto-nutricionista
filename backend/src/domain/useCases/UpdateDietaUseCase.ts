@@ -1,19 +1,25 @@
+import { IDietaRepository } from "../../application/interfaces/IDietaRepository"
+import { AtualizarDietaDTO } from "../../application/dtos/AtualizarDietaDTO"
+import { CriarDietaResponseDTO } from "../../application/dtos/ConsultarDietaResponseDTO"
 import { Dieta } from "../entities/Dieta"
 import { PlanoRefeicao } from "../entities/PlanoRefeicao"
 import { Refeicao } from "../entities/Refeicao"
 import { AlimentoRefeicao } from "../entities/AlimentoRefeicao"
-import { IDietaRepository } from "../../application/interfaces/IDietaRepository"
-import { CriarDietaDTO } from "../../application/dtos/CriarDietaDTO"
 import { v4 as uuidv4 } from "uuid"
-import { CriarDietaResponseDTO } from "../../application/dtos/ConsultarDietaResponseDTO"
 
-export class CreateDietaUseCase {
+export class UpdateDietaUseCase {
   constructor(private dietaRepo: IDietaRepository) {}
 
-  async criarDieta(
-    dietaDTO: CriarDietaDTO
+  async atualizarDieta(
+    dietaDTO: AtualizarDietaDTO
   ): Promise<CriarDietaResponseDTO | null> {
     try {
+      // Verifica se a dieta existe
+      const dietaExistente = await this.dietaRepo.findById(dietaDTO.id)
+      if (!dietaExistente) {
+        throw new Error("Dieta não encontrada")
+      }
+
       // Converte planos de refeições do DTO para entidades
       const planosRefeicao: PlanoRefeicao[] | undefined =
         dietaDTO.planosRefeicao?.map((planoDTO) => {
@@ -40,8 +46,9 @@ export class CreateDietaUseCase {
           )
         })
 
-      const dieta = new Dieta(
-        uuidv4(),
+      // Cria objeto Dieta com os dados atualizados
+      const dietaAtualizada = new Dieta(
+        dietaDTO.id,
         dietaDTO.idNutricionista,
         dietaDTO.idPaciente,
         new Date(dietaDTO.dataInicio),
@@ -51,11 +58,17 @@ export class CreateDietaUseCase {
         planosRefeicao
       )
 
-      const novaDieta = await this.dietaRepo.save(dieta)
-      return CriarDietaResponseDTO.fromDieta(novaDieta)
+      // Atualiza a dieta no repositório
+      const dieta = await this.dietaRepo.update(dietaDTO.id, dietaAtualizada)
+      if (!dieta) {
+        throw new Error("Erro ao atualizar dieta")
+      }
+
+      return CriarDietaResponseDTO.fromDieta(dieta)
     } catch (error) {
-      console.error("Erro durante a criação de dieta:", error)
+      console.error("Erro durante a atualização de dieta:", error)
       return null
     }
   }
 }
+

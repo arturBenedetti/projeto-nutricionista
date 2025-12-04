@@ -4,6 +4,7 @@
 
     <DietaList
       v-if="!selectedDieta && !showForm"
+      :key="listKey"
       @add="onAdd"
       @edit="onEdit"
       @view="onView"
@@ -22,45 +23,72 @@
 </template>
 
 <script setup>
-import { ref } from "vue"
-import DietaList from "../../components/dieta/DietaList.vue"
-import DietaForm from "../../components/dieta/DietaForm.vue"
-import DietaView from "../../components/dieta/DietaView.vue"
+import { ref } from "vue";
+import DietaList from "../../components/dieta/DietaList.vue";
+import DietaForm from "../../components/dieta/DietaForm.vue";
+import DietaView from "../../components/dieta/DietaView.vue";
 
-const selectedDieta = ref(null)
-const showForm = ref(false)
-const viewMode = ref(false)
+const selectedDieta = ref(null);
+const showForm = ref(false);
+const viewMode = ref(false);
+const listKey = ref(0);
 
 function onAdd() {
-  selectedDieta.value = null
-  showForm.value = true
+  selectedDieta.value = null;
+  showForm.value = true;
 }
 
 function onEdit(dieta) {
-  selectedDieta.value = dieta
-  showForm.value = true
+  selectedDieta.value = dieta;
+  showForm.value = true;
 }
 
 function onView(dieta) {
-  selectedDieta.value = dieta
-  viewMode.value = true
+  selectedDieta.value = dieta;
+  viewMode.value = true;
 }
 
-function onDelete(dieta) {
-  // TODO: Implementar confirmação e exclusão
-  console.log("Deletar dieta:", dieta)
-  // Por enquanto, apenas log
-  alert("Funcionalidade de exclusão será implementada em breve!")
+async function onDelete(dieta) {
+  // Confirmação antes de excluir
+  const confirmar = confirm(
+    `Tem certeza que deseja excluir a dieta do paciente?\n\nEsta ação não pode ser desfeita.`
+  );
+
+  if (!confirmar) {
+    return;
+  }
+
+  try {
+    const sucesso = await window.api.excluirDieta({ id: dieta.id });
+
+    if (sucesso) {
+      alert("Dieta excluída com sucesso!");
+      // Força recarregamento da lista incrementando a key
+      listKey.value++;
+      onCancel();
+    } else {
+      alert("Erro ao excluir dieta. Tente novamente.");
+    }
+  } catch (error) {
+    console.error("Erro ao excluir dieta:", error);
+    alert("Erro ao excluir dieta. Tente novamente.");
+  }
 }
 
 function onCancel() {
-  selectedDieta.value = null
-  showForm.value = false
-  viewMode.value = false
+  selectedDieta.value = null;
+  showForm.value = false;
+  viewMode.value = false;
 }
 
-function onSaved() {
-  onCancel()
+function onSaved(dietaCriada) {
+  if (dietaCriada) {
+    selectedDieta.value = dietaCriada;
+    showForm.value = false;
+    viewMode.value = true;
+  } else {
+    onCancel();
+  }
 }
 </script>
 

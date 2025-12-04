@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from "vue"
+import { ref, computed, onMounted } from "vue"
 import { loggedUser } from "../../services/UsuarioService"
 
 const props = defineProps({ dieta: Object })
@@ -7,6 +7,16 @@ const emit = defineEmits(["close"])
 
 const pacientes = ref([])
 const loading = ref(false)
+
+const DIAS_SEMANA = [
+  { valor: 0, nome: "Domingo" },
+  { valor: 1, nome: "Segunda-feira" },
+  { valor: 2, nome: "Terça-feira" },
+  { valor: 3, nome: "Quarta-feira" },
+  { valor: 4, nome: "Quinta-feira" },
+  { valor: 5, nome: "Sexta-feira" },
+  { valor: 6, nome: "Sábado" },
+]
 
 onMounted(async () => {
   await fetchPacientes()
@@ -51,6 +61,16 @@ function calculateDuration(dataInicio, dataFim) {
 
   return `${diffDays} dias`
 }
+
+function getNomeDiaSemana(diaSemana) {
+  const dia = DIAS_SEMANA.find((d) => d.valor === diaSemana)
+  return dia ? dia.nome : `Dia ${diaSemana}`
+}
+
+const sortedPlanosRefeicao = computed(() => {
+  if (!props.dieta?.planosRefeicao) return []
+  return [...props.dieta.planosRefeicao].sort((a, b) => a.diaSemana - b.diaSemana)
+})
 
 function close() {
   emit("close")
@@ -114,6 +134,93 @@ function close() {
         <div class="text-gray-300 whitespace-pre-wrap">
           {{ dieta.observacoes }}
         </div>
+      </div>
+
+      <!-- Planos de Refeições -->
+      <div
+        v-if="dieta.planosRefeicao && dieta.planosRefeicao.length > 0"
+        class="bg-gray-800 border border-gray-700 rounded-lg p-4"
+      >
+        <h3 class="text-lg font-semibold text-white mb-4">
+          Planos de Refeições
+        </h3>
+
+        <div class="space-y-6">
+          <div
+            v-for="plano in sortedPlanosRefeicao"
+            :key="plano.id || plano.diaSemana"
+            class="border border-gray-600 rounded-lg p-4"
+          >
+            <h4 class="text-md font-semibold text-teal-400 mb-3">
+              {{ getNomeDiaSemana(plano.diaSemana) }}
+            </h4>
+
+            <div v-if="plano.refeicoes && plano.refeicoes.length > 0" class="space-y-4">
+              <div
+                v-for="(refeicao, indexRefeicao) in plano.refeicoes"
+                :key="refeicao.id || indexRefeicao"
+                class="bg-gray-700 rounded-lg p-4"
+              >
+                <div class="flex items-center justify-between mb-3">
+                  <h5 class="text-base font-medium text-white">
+                    {{ refeicao.nome }}
+                  </h5>
+                </div>
+
+                <!-- Alimentos da Refeição -->
+                <div
+                  v-if="refeicao.alimentos && refeicao.alimentos.length > 0"
+                  class="mb-3"
+                >
+                  <h6 class="text-sm font-medium text-gray-400 mb-2">
+                    Ingredientes:
+                  </h6>
+                  <ul class="space-y-2">
+                    <li
+                      v-for="(alimento, indexAlimento) in refeicao.alimentos"
+                      :key="indexAlimento"
+                      class="flex items-center justify-between bg-gray-600 rounded px-3 py-2"
+                    >
+                      <span class="text-white text-sm flex-1">
+                        {{ alimento.nomeAlimento || `Alimento ${alimento.idAlimento}` }}
+                      </span>
+                      <span class="text-teal-400 text-sm font-medium ml-4">
+                        {{ alimento.quantidade }}g
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+
+                <!-- Observação da Refeição -->
+                <div v-if="refeicao.observacao" class="mt-3 pt-3 border-t border-gray-600">
+                  <h6 class="text-sm font-medium text-gray-400 mb-1">
+                    Observações:
+                  </h6>
+                  <p class="text-gray-300 text-sm whitespace-pre-wrap">
+                    {{ refeicao.observacao }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div v-else class="text-gray-400 text-sm italic">
+              Nenhuma refeição cadastrada para este dia
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mensagem quando não há planos de refeição -->
+      <div
+        v-else
+        class="bg-gray-800 border border-gray-700 rounded-lg p-4"
+      >
+        <h3 class="text-lg font-semibold text-white mb-3">
+          Planos de Refeições
+        </h3>
+        <p class="text-gray-400 italic">
+          Nenhum plano de refeição cadastrado para esta dieta
+        </p>
       </div>
 
       <!-- Informações Adicionais -->

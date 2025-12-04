@@ -1,9 +1,28 @@
 <script setup>
-import { ref, watch, onMounted } from "vue"
-import { loggedUser } from "../../services/UsuarioService"
+import { ref, watch, onMounted } from "vue";
+import { loggedUser } from "../../services/UsuarioService";
 
-const props = defineProps({ dieta: Object })
-const emit = defineEmits(["cancel", "saved"])
+const props = defineProps({ dieta: Object });
+const emit = defineEmits(["cancel", "saved"]);
+
+const DIAS_SEMANA = [
+  { valor: 0, nome: "Domingo" },
+  { valor: 1, nome: "Segunda-feira" },
+  { valor: 2, nome: "Terça-feira" },
+  { valor: 3, nome: "Quarta-feira" },
+  { valor: 4, nome: "Quinta-feira" },
+  { valor: 5, nome: "Sexta-feira" },
+  { valor: 6, nome: "Sábado" },
+];
+
+const TIPOS_REFEICAO = [
+  "Café da Manhã",
+  "Lanche da Manhã",
+  "Almoço",
+  "Lanche da Tarde",
+  "Jantar",
+  "Ceia",
+];
 
 const localDieta = ref({
   idPaciente: "",
@@ -11,121 +30,283 @@ const localDieta = ref({
   dataFim: "",
   descricao: "",
   observacoes: "",
-})
+  planosRefeicao: [], // Array de planos de refeições por dia
+});
 
-const pacientes = ref([])
-const loading = ref(false)
-const errorMessage = ref("")
-const successMessage = ref("")
+const pacientes = ref([]);
+const loading = ref(false);
+const errorMessage = ref("");
+const successMessage = ref("");
+
+// Estados para busca de alimentos (um para cada refeição)
+const buscaAlimento = ref({}); // { "diaSemana-indexRefeicao": "termo" }
+const resultadosBusca = ref({}); // { "diaSemana-indexRefeicao": [...] }
+const buscandoAlimentos = ref({}); // { "diaSemana-indexRefeicao": boolean }
 
 onMounted(async () => {
-  await fetchPacientes()
-})
+  await fetchPacientes();
+});
 
 async function fetchPacientes() {
   try {
     const response = await window.api.listarPacientes({
       idNutricionista: loggedUser.value.id,
-    })
+    });
 
     if (response && response.pacientes) {
-      pacientes.value = response.pacientes
+      pacientes.value = response.pacientes;
     }
   } catch (error) {
-    console.error("Erro ao buscar pacientes:", error)
-    errorMessage.value = "Erro ao carregar lista de pacientes"
+    console.error("Erro ao buscar pacientes:", error);
+    errorMessage.value = "Erro ao carregar lista de pacientes";
   }
 }
+
+const dietaId = ref("");
 
 watch(
   () => props.dieta,
   (newVal) => {
-    localDieta.value = newVal
-      ? { ...newVal }
-      : {
-          idPaciente: "",
-          dataInicio: "",
-          dataFim: "",
-          descricao: "",
-          observacoes: "",
-        }
+    if (newVal) {
+      dietaId.value = newVal.id || "";
+      localDieta.value = {
+        idPaciente: newVal.idPaciente || "",
+        dataInicio: newVal.dataInicio || "",
+        dataFim: newVal.dataFim || "",
+        descricao: newVal.descricao || "",
+        observacoes: newVal.observacoes || "",
+        planosRefeicao: newVal.planosRefeicao || [],
+      };
+    } else {
+      dietaId.value = "";
+      localDieta.value = {
+        idPaciente: "",
+        dataInicio: "",
+        dataFim: "",
+        descricao: "",
+        observacoes: "",
+        planosRefeicao: [],
+      };
+    }
   },
   { immediate: true }
-)
+);
+
+// Funções para gerenciar planos de refeições
+function getPlanoPorDia(diaSemana) {
+  return localDieta.value.planosRefeicao.find((p) => p.diaSemana === diaSemana);
+}
+
+function criarOuObterPlano(diaSemana) {
+  let plano = getPlanoPorDia(diaSemana);
+  if (!plano) {
+    plano = {
+      diaSemana,
+      refeicoes: [],
+    };
+    localDieta.value.planosRefeicao.push(plano);
+  }
+  return plano;
+}
+
+function adicionarRefeicao(diaSemana) {
+  const plano = criarOuObterPlano(diaSemana);
+  plano.refeicoes.push({
+    nome: "",
+    alimentos: [],
+    observacao: "",
+  });
+}
+
+function removerRefeicao(diaSemana, indexRefeicao) {
+  const plano = getPlanoPorDia(diaSemana);
+  if (plano) {
+    plano.refeicoes.splice(indexRefeicao, 1);
+    // Remove o plano se não tiver mais refeições
+    if (plano.refeicoes.length === 0) {
+      const indexPlano = localDieta.value.planosRefeicao.indexOf(plano);
+      if (indexPlano > -1) {
+        localDieta.value.planosRefeicao.splice(indexPlano, 1);
+      }
+    }
+  }
+}
+
+// Funções para buscar e adicionar alimentos
+function getBuscaKey(diaSemana, indexRefeicao) {
+  return `${diaSemana}-${indexRefeicao}`;
+}
+
+async function buscarAlimentos(diaSemana, indexRefeicao) {
+  const key = getBuscaKey(diaSemana, indexRefeicao);
+  const termo = buscaAlimento.value[key] || "";
+
+  if (!termo || termo.trim().length < 2) {
+    resultadosBusca.value[key] = [];
+    return;
+  }
+
+  buscandoAlimentos.value[key] = true;
+  try {
+    const response = await window.api.buscarAlimentos(termo);
+    if (response && response.alimentos) {
+      resultadosBusca.value[key] = response.alimentos;
+    } else {
+      resultadosBusca.value[key] = [];
+    }
+  } catch (error) {
+    console.error("Erro ao buscar alimentos:", error);
+    resultadosBusca.value[key] = [];
+  } finally {
+    buscandoAlimentos.value[key] = false;
+  }
+}
+
+function adicionarAlimento(diaSemana, indexRefeicao, alimento) {
+  const plano = getPlanoPorDia(diaSemana);
+  if (plano && plano.refeicoes[indexRefeicao]) {
+    plano.refeicoes[indexRefeicao].alimentos.push({
+      idAlimento: alimento.id,
+      nomeAlimento: alimento.nome,
+      quantidade: 100, // quantidade padrão em gramas
+    });
+    const key = getBuscaKey(diaSemana, indexRefeicao);
+    buscaAlimento.value[key] = "";
+    resultadosBusca.value[key] = [];
+  }
+}
+
+function removerAlimento(diaSemana, indexRefeicao, indexAlimento) {
+  const plano = getPlanoPorDia(diaSemana);
+  if (plano && plano.refeicoes[indexRefeicao]) {
+    plano.refeicoes[indexRefeicao].alimentos.splice(indexAlimento, 1);
+  }
+}
 
 function validateForm() {
   if (!localDieta.value.idPaciente) {
-    errorMessage.value = "Selecione um paciente"
-    return false
+    errorMessage.value = "Selecione um paciente";
+    return false;
   }
   if (!localDieta.value.dataInicio) {
-    errorMessage.value = "Data de início é obrigatória"
-    return false
+    errorMessage.value = "Data de início é obrigatória";
+    return false;
   }
   if (!localDieta.value.dataFim) {
-    errorMessage.value = "Data de fim é obrigatória"
-    return false
+    errorMessage.value = "Data de fim é obrigatória";
+    return false;
   }
   if (!localDieta.value.descricao) {
-    errorMessage.value = "Descrição é obrigatória"
-    return false
+    errorMessage.value = "Descrição é obrigatória";
+    return false;
   }
 
-  const dataInicio = new Date(localDieta.value.dataInicio)
-  const dataFim = new Date(localDieta.value.dataFim)
+  const dataInicio = new Date(localDieta.value.dataInicio);
+  const dataFim = new Date(localDieta.value.dataFim);
 
   if (dataFim <= dataInicio) {
-    errorMessage.value = "Data de fim deve ser posterior à data de início"
-    return false
+    errorMessage.value = "Data de fim deve ser posterior à data de início";
+    return false;
   }
 
-  return true
+  // Valida se todas as refeições têm nome
+  for (const plano of localDieta.value.planosRefeicao) {
+    for (const refeicao of plano.refeicoes) {
+      if (!refeicao.nome || refeicao.nome.trim() === "") {
+        errorMessage.value = "Todas as refeições devem ter um nome";
+        return false;
+      }
+    }
+  }
+
+  return true;
 }
 
 async function save() {
   if (!validateForm()) {
-    return
+    return;
   }
 
-  loading.value = true
-  errorMessage.value = ""
-  successMessage.value = ""
+  loading.value = true;
+  errorMessage.value = "";
+  successMessage.value = "";
 
   try {
-    const novaDieta = {
+    // Serializa os dados para evitar problemas com objetos reativos do Vue
+    // que não podem ser clonados pelo IPC do Electron
+    const planosRefeicaoSerializados = localDieta.value.planosRefeicao.map(
+      (plano) => ({
+        ...(plano.id && { id: plano.id }),
+        diaSemana: plano.diaSemana,
+        refeicoes: plano.refeicoes.map((refeicao) => ({
+          ...(refeicao.id && { id: refeicao.id }),
+          nome: refeicao.nome,
+          alimentos: refeicao.alimentos.map((alimento) => ({
+            idAlimento: alimento.idAlimento,
+            quantidade: Number(alimento.quantidade),
+            ...(alimento.nomeAlimento && {
+              nomeAlimento: alimento.nomeAlimento,
+            }),
+          })),
+          ...(refeicao.observacao && { observacao: refeicao.observacao }),
+        })),
+      })
+    );
+
+    const isEditando = !!dietaId.value;
+
+    const dadosDieta = {
       idNutricionista: loggedUser.value.id,
       idPaciente: localDieta.value.idPaciente,
       dataInicio: localDieta.value.dataInicio,
       dataFim: localDieta.value.dataFim,
       descricao: localDieta.value.descricao,
-      observacoes: localDieta.value.observacoes,
+      ...(localDieta.value.observacoes && {
+        observacoes: localDieta.value.observacoes,
+      }),
+      ...(planosRefeicaoSerializados.length > 0 && {
+        planosRefeicao: planosRefeicaoSerializados,
+      }),
+    };
+
+    let dietaSalva;
+    if (isEditando) {
+      // Atualiza dieta existente
+      dietaSalva = await window.api.atualizarDieta({
+        ...dadosDieta,
+        id: dietaId.value,
+      });
+      successMessage.value = "Dieta atualizada com sucesso!";
+    } else {
+      // Cria nova dieta
+      dietaSalva = await window.api.criarDieta(dadosDieta);
+      successMessage.value = "Dieta criada com sucesso!";
     }
 
-    await window.api.criarDieta(novaDieta)
-    successMessage.value = "Dieta criada com sucesso!"
-
     // Limpar formulário
+    dietaId.value = "";
     localDieta.value = {
       idPaciente: "",
       dataInicio: "",
       dataFim: "",
       descricao: "",
       observacoes: "",
-    }
+      planosRefeicao: [],
+    };
 
     setTimeout(() => {
-      emit("saved")
-    }, 1500)
+      emit("saved", dietaSalva);
+    }, 1500);
   } catch (error) {
-    console.error("Erro ao criar dieta:", error)
-    errorMessage.value = "Erro ao criar dieta. Tente novamente."
+    console.error("Erro ao criar dieta:", error);
+    errorMessage.value = "Erro ao criar dieta. Tente novamente.";
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 function cancel() {
-  emit("cancel")
+  emit("cancel");
 }
 </script>
 
@@ -209,6 +390,157 @@ function cancel() {
           class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
           :disabled="loading"
         ></textarea>
+      </div>
+
+      <!-- Planos de Refeições por Dia da Semana -->
+      <div class="mt-6">
+        <h4 class="text-lg font-semibold text-white mb-4">
+          Planos de Refeições por Dia da Semana
+        </h4>
+
+        <div class="space-y-6">
+          <div
+            v-for="dia in DIAS_SEMANA"
+            :key="dia.valor"
+            class="border border-gray-600 rounded-lg p-4"
+          >
+            <div class="flex items-center justify-between mb-3">
+              <h5 class="text-md font-medium text-white">{{ dia.nome }}</h5>
+              <button
+                type="button"
+                @click="adicionarRefeicao(dia.valor)"
+                class="text-sm bg-teal-600 hover:bg-teal-700 text-white px-3 py-1 rounded"
+                :disabled="loading"
+              >
+                + Adicionar Refeição
+              </button>
+            </div>
+
+            <!-- Lista de Refeições do Dia -->
+            <div v-if="getPlanoPorDia(dia.valor)" class="space-y-4 mt-3">
+              <div
+                v-for="(refeicao, indexRefeicao) in getPlanoPorDia(dia.valor)
+                  .refeicoes"
+                :key="indexRefeicao"
+                class="bg-gray-800 rounded p-4 space-y-3"
+              >
+                <div class="flex items-center justify-between">
+                  <select
+                    v-model="refeicao.nome"
+                    class="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-teal-500 mr-2"
+                    :disabled="loading"
+                  >
+                    <option value="">Selecione o tipo de refeição</option>
+                    <option
+                      v-for="tipo in TIPOS_REFEICAO"
+                      :key="tipo"
+                      :value="tipo"
+                    >
+                      {{ tipo }}
+                    </option>
+                  </select>
+                  <button
+                    type="button"
+                    @click="removerRefeicao(dia.valor, indexRefeicao)"
+                    class="text-red-400 hover:text-red-300 px-2"
+                    :disabled="loading"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <!-- Busca de Alimentos -->
+                <div class="relative">
+                  <input
+                    type="text"
+                    :value="
+                      buscaAlimento[`${dia.valor}-${indexRefeicao}`] || ''
+                    "
+                    @input="
+                      (e) => {
+                        const key = `${dia.valor}-${indexRefeicao}`;
+                        buscaAlimento[key] = e.target.value;
+                        buscarAlimentos(dia.valor, indexRefeicao);
+                      }
+                    "
+                    placeholder="Buscar alimento..."
+                    class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    :disabled="
+                      loading ||
+                      buscandoAlimentos[`${dia.valor}-${indexRefeicao}`] ||
+                      false
+                    "
+                  />
+                  <div
+                    v-if="
+                      (resultadosBusca[`${dia.valor}-${indexRefeicao}`] || [])
+                        .length > 0
+                    "
+                    class="absolute z-10 w-full mt-1 bg-gray-700 border border-gray-600 rounded max-h-48 overflow-y-auto"
+                  >
+                    <button
+                      type="button"
+                      v-for="alimento in resultadosBusca[
+                        `${dia.valor}-${indexRefeicao}`
+                      ] || []"
+                      :key="alimento.id"
+                      @click="
+                        adicionarAlimento(dia.valor, indexRefeicao, alimento)
+                      "
+                      class="w-full text-left px-4 py-2 hover:bg-gray-600 text-white border-b border-gray-600 last:border-0"
+                    >
+                      {{ alimento.nome }}
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Lista de Alimentos da Refeição -->
+                <div v-if="refeicao.alimentos.length > 0" class="space-y-2">
+                  <div
+                    v-for="(alimento, indexAlimento) in refeicao.alimentos"
+                    :key="indexAlimento"
+                    class="flex items-center gap-2 bg-gray-700 rounded p-2"
+                  >
+                    <span class="flex-1 text-white text-sm">
+                      {{ alimento.nomeAlimento }}
+                    </span>
+                    <input
+                      type="number"
+                      v-model.number="alimento.quantidade"
+                      min="1"
+                      step="1"
+                      placeholder="Qtd (g)"
+                      class="w-24 bg-gray-600 border border-gray-500 rounded px-2 py-1 text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      :disabled="loading"
+                    />
+                    <span class="text-gray-400 text-sm">g</span>
+                    <button
+                      type="button"
+                      @click="
+                        removerAlimento(dia.valor, indexRefeicao, indexAlimento)
+                      "
+                      class="text-red-400 hover:text-red-300 px-2"
+                      :disabled="loading"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Observação da Refeição -->
+                <div>
+                  <textarea
+                    v-model="refeicao.observacao"
+                    rows="2"
+                    placeholder="Observações sobre esta refeição (opcional)..."
+                    class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    :disabled="loading"
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 

@@ -110,7 +110,7 @@ export async function importarTaco(db?: any, silent: boolean = false): Promise<b
     if (!silent) console.log(`Lendo arquivo CSV: ${csvPath}`);
 
     // Lê o arquivo com encoding latin1 para lidar com caracteres especiais
-    const fileContent = fs.readFileSync(csvPath, "latin1");
+    const fileContent = fs.readFileSync(csvPath, "utf8");
     const lines = fileContent.split("\n").filter((line) => line.trim() !== "");
 
     if (lines.length < 2) {
