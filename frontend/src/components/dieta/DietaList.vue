@@ -1,80 +1,80 @@
 <script setup>
-import { ref, onMounted } from "vue"
-import { loggedUser } from "../../services/UsuarioService"
+import { ref, onMounted } from "vue";
+import { loggedUser } from "../../services/UsuarioService";
 
-const emit = defineEmits(["add", "edit", "view", "delete"])
+const emit = defineEmits(["add", "edit", "view", "delete"]);
 
-const dietas = ref([])
-const loading = ref(false)
-const pacientes = ref([])
+const dietas = ref([]);
+const loading = ref(false);
+const pacientes = ref([]);
 
 onMounted(async () => {
-  await fetchPacientes()
-  await fetchData()
-})
+  await fetchPacientes();
+  await fetchData();
+});
 
 async function fetchPacientes() {
   try {
     const response = await window.api.listarPacientes({
       idNutricionista: loggedUser.value.id,
-    })
+    });
 
     if (response && response.pacientes) {
-      pacientes.value = response.pacientes
+      pacientes.value = response.pacientes;
     }
   } catch (error) {
-    console.error("Erro ao buscar pacientes:", error)
+    console.error("Erro ao buscar pacientes:", error);
   }
 }
 
 async function fetchData() {
-  loading.value = true
+  loading.value = true;
   try {
     const response = await window.api.listarDietas({
       idNutricionista: loggedUser.value.id,
-    })
+    });
 
     if (response && response.dietas) {
-      dietas.value = response.dietas
+      dietas.value = response.dietas;
     } else {
-      console.error("Erro ao listar dietas:", response)
+      console.error("Erro ao listar dietas:", response);
     }
   } catch (error) {
-    console.error("Erro ao buscar dietas:", error)
+    console.error("Erro ao buscar dietas:", error);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 function getPacienteNome(idPaciente) {
-  const paciente = pacientes.value.find((p) => p.id === idPaciente)
-  return paciente ? paciente.nome : "Paciente não encontrado"
+  const paciente = pacientes.value.find((p) => p.id === idPaciente);
+  return paciente ? paciente.nome : "Paciente não encontrado";
 }
 
 function formatDate(dateString) {
-  if (!dateString) return ""
-  const date = new Date(dateString)
-  return date.toLocaleDateString("pt-BR")
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("pt-BR");
 }
 
 function formatDateRange(dataInicio, dataFim) {
-  return `${formatDate(dataInicio)} - ${formatDate(dataFim)}`
+  return `${formatDate(dataInicio)} - ${formatDate(dataFim)}`;
 }
 
 function onAdd() {
-  emit("add")
+  emit("add");
 }
 
 function onEdit(dieta) {
-  emit("edit", dieta)
+  emit("edit", dieta);
 }
 
 function onView(dieta) {
-  emit("view", dieta)
+  emit("view", dieta);
 }
 
 function onDelete(dieta) {
-  emit("delete", dieta)
+  emit("delete", dieta);
 }
 </script>
 
@@ -139,28 +139,16 @@ function onDelete(dieta) {
 
           <!-- Botões de ação -->
           <div class="flex gap-2 ml-4">
-            <button
-              @click="onView(dieta)"
-              class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-3 py-1 rounded transition-colors"
-              title="Visualizar"
-            >
-              👁️
+            <button @click="onView(dieta)" class="text-blue-300 mr-2">
+              Ver
             </button>
 
-            <button
-              @click="onEdit(dieta)"
-              class="bg-yellow-600 hover:bg-yellow-700 text-white text-sm px-3 py-1 rounded transition-colors"
-              title="Editar"
-            >
-              ✏️
+            <button @click="onEdit(dieta)" class="text-yellow-300 mr-2">
+              Editar
             </button>
 
-            <button
-              @click="onDelete(dieta)"
-              class="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-1 rounded transition-colors"
-              title="Excluir"
-            >
-              🗑️
+            <button @click="onDelete(dieta)" class="text-red-500">
+              Excluir
             </button>
           </div>
         </div>

@@ -62,6 +62,14 @@ const {
 } = require("../backend/dist/application/controllers/DietaController")
 const { dietaIPC } = require("../backend/dist/application/ipc/DietaIPC")
 
+const {
+  AlimentoRepository,
+} = require("../backend/dist/infrastructure/repositories/AlimentoRepository")
+const {
+  AlimentoController,
+} = require("../backend/dist/application/controllers/AlimentoController")
+const { alimentoIPC } = require("../backend/dist/application/ipc/AlimentoIPC")
+
 require("electron-reload")(__dirname, {
   electron: require(`${__dirname}/node_modules/electron`),
 })
@@ -88,6 +96,15 @@ async function createWindow() {
   // Configura backend
   const db = await connectMongo()
 
+  // Importa dados TACO automaticamente se ainda não existirem
+  try {
+    const { importarTaco } = require("../backend/dist/scripts/importarTaco");
+    await importarTaco(db, true); // silent = true para não poluir o console
+  } catch (error) {
+    // Log do erro mas não impede o sistema de iniciar
+    console.error("Erro ao verificar/importar dados TACO:", error.message);
+  }
+
   const userRepo = new UsuarioRepository(db)    
   const usuarioService = new UsuarioService(userRepo);
   const userController = new UsuarioController(userRepo);
@@ -101,13 +118,17 @@ async function createWindow() {
     usuarioService
   );
   const dietaRepo = new DietaRepository(db)
-  const dietaController = new DietaController(dietaRepo)
+  const dietaController = new DietaController(dietaRepo, pacienteRepo)
+
+  const alimentoRepo = new AlimentoRepository(db)
+  const alimentoController = new AlimentoController(alimentoRepo)
 
   // Registra IPCs
   registerUserIPC(userController)
   loginIPC(loginController)
   pacienteIPC(pacienteController)
   dietaIPC(dietaController)
+  alimentoIPC(alimentoController)
 
   mainWindow.loadURL("http://localhost:5173");
 

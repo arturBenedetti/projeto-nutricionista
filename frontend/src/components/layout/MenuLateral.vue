@@ -33,6 +33,14 @@ import { loggedUser } from "../../services/UsuarioService"
             >Meus Dados</router-link
           >
         </li>
+        <li>
+          <router-link
+            v-if="loggedUser.isPaciente"
+            to="/minha-dieta"
+            exact-active-class="active"
+            >Minha Dieta</router-link
+          >
+        </li>
       </ul>
     </nav>
   </aside>

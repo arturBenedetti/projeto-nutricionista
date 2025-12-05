@@ -1,13 +1,10 @@
 <script setup>
-import { ref, computed, onMounted, watch, nextTick } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { loggedUser } from "../../services/UsuarioService";
 
-const props = defineProps({ dieta: Object });
-const emit = defineEmits(["close"]);
-
-const pacientes = ref([]);
-const loading = ref(false);
-const dietaLocal = ref(null);
+const dieta = ref(null);
+const loading = ref(true);
+const errorMessage = ref("");
 
 const DIAS_SEMANA = [
   { valor: 0, nome: "Domingo" },
@@ -20,43 +17,82 @@ const DIAS_SEMANA = [
 ];
 
 onMounted(async () => {
-  await fetchPacientes();
+  await buscarDieta();
 });
 
-// Observa mudanças na dieta e busca informações nutricionais
-watch(
-  () => props.dieta,
-  async (newDieta) => {
-    if (newDieta) {
-      // Faz uma cópia profunda para poder modificar os alimentos
-      dietaLocal.value = JSON.parse(JSON.stringify(newDieta));
-      // Aguarda o próximo tick do Vue para garantir que a reatividade foi aplicada
-      await nextTick();
-      await enriquecerAlimentosComNutrientes();
-    } else {
-      dietaLocal.value = null;
-    }
-  },
-  { immediate: true, deep: true }
-);
-
-async function fetchPacientes() {
+async function buscarDieta() {
+  loading.value = true;
+  errorMessage.value = "";
   try {
-    const response = await window.api.listarPacientes({
-      idNutricionista: loggedUser.value.id,
+    const response = await window.api.buscarDietaPaciente({
+      idUsuario: loggedUser.value.id,
     });
 
-    if (response && response.pacientes) {
-      pacientes.value = response.pacientes;
+    if (response) {
+      dieta.value = response;
+      // Busca informações nutricionais dos alimentos se não estiverem disponíveis
+      await enriquecerAlimentosComNutrientes();
+    } else {
+      errorMessage.value = "Nenhuma dieta válida encontrada no momento.";
     }
   } catch (error) {
-    console.error("Erro ao buscar pacientes:", error);
+    console.error("Erro ao buscar dieta:", error);
+    errorMessage.value = "Erro ao carregar sua dieta. Tente novamente.";
+  } finally {
+    loading.value = false;
   }
 }
 
-function getPacienteNome(idPaciente) {
-  const paciente = pacientes.value.find((p) => p.id === idPaciente);
-  return paciente ? paciente.nome : "Paciente não encontrado";
+// Função para buscar informações nutricionais dos alimentos que não as têm
+async function enriquecerAlimentosComNutrientes() {
+  if (!dieta.value?.planosRefeicao) return;
+
+  for (const plano of dieta.value.planosRefeicao) {
+    if (!plano.refeicoes) continue;
+
+    for (const refeicao of plano.refeicoes) {
+      if (!refeicao.alimentos) continue;
+
+      for (const alimento of refeicao.alimentos) {
+        // Se o alimento não tem informações nutricionais, tenta buscar
+        if (
+          !alimento.energiaKcal &&
+          !alimento.carboidratos &&
+          !alimento.proteinas &&
+          !alimento.gorduras &&
+          alimento.nomeAlimento
+        ) {
+          try {
+            const response = await window.api.buscarAlimentos(
+              alimento.nomeAlimento
+            );
+            if (
+              response &&
+              response.alimentos &&
+              response.alimentos.length > 0
+            ) {
+              // Encontra o alimento exato ou o primeiro resultado
+              const alimentoEncontrado =
+                response.alimentos.find(
+                  (a) => a.nome === alimento.nomeAlimento
+                ) || response.alimentos[0];
+
+              // Adiciona informações nutricionais
+              alimento.energiaKcal = alimentoEncontrado.energiaKcal || 0;
+              alimento.carboidratos = alimentoEncontrado.carboidratos || 0;
+              alimento.proteinas = alimentoEncontrado.proteinas || 0;
+              alimento.gorduras = alimentoEncontrado.gorduras || 0;
+            }
+          } catch (error) {
+            console.error(
+              `Erro ao buscar nutrientes para ${alimento.nomeAlimento}:`,
+              error
+            );
+          }
+        }
+      }
+    }
+  }
 }
 
 function formatDate(dateString) {
@@ -85,142 +121,12 @@ function getNomeDiaSemana(diaSemana) {
   return dia ? dia.nome : `Dia ${diaSemana}`;
 }
 
-const dietaAtual = computed(() => {
-  return dietaLocal.value || props.dieta;
-});
-
 const sortedPlanosRefeicao = computed(() => {
-  const dieta = dietaAtual.value;
-  if (!dieta?.planosRefeicao) return [];
-  return [...dieta.planosRefeicao].sort((a, b) => a.diaSemana - b.diaSemana);
+  if (!dieta.value?.planosRefeicao) return [];
+  return [...dieta.value.planosRefeicao].sort(
+    (a, b) => a.diaSemana - b.diaSemana
+  );
 });
-
-// Função para buscar informações nutricionais dos alimentos que não as têm
-async function enriquecerAlimentosComNutrientes() {
-  const dieta = dietaAtual.value;
-  if (!dieta?.planosRefeicao) {
-    console.log("DietaView: Sem planos de refeição");
-    return;
-  }
-
-  console.log(
-    "DietaView: Iniciando busca de nutrientes",
-    dieta.planosRefeicao.length,
-    "planos"
-  );
-
-  // Coleta todos os alimentos únicos que precisam de informações nutricionais
-  const alimentosParaBuscar = new Map();
-
-  for (const plano of dieta.planosRefeicao) {
-    if (!plano.refeicoes) continue;
-
-    for (const refeicao of plano.refeicoes) {
-      if (!refeicao.alimentos) continue;
-
-      for (const alimento of refeicao.alimentos) {
-        // Se o alimento não tem informações nutricionais (undefined, null ou 0), adiciona à lista de busca
-        const temNutrientes =
-          (alimento.energiaKcal && alimento.energiaKcal > 0) ||
-          (alimento.carboidratos && alimento.carboidratos > 0) ||
-          (alimento.proteinas && alimento.proteinas > 0) ||
-          (alimento.gorduras && alimento.gorduras > 0);
-
-        if (
-          !temNutrientes &&
-          alimento.nomeAlimento &&
-          !alimentosParaBuscar.has(alimento.nomeAlimento)
-        ) {
-          alimentosParaBuscar.set(alimento.nomeAlimento, []);
-        }
-      }
-    }
-  }
-
-  console.log(
-    "DietaView: Alimentos para buscar:",
-    Array.from(alimentosParaBuscar.keys())
-  );
-
-  // Busca informações nutricionais para cada alimento único
-  for (const [nomeAlimento, alimentos] of alimentosParaBuscar) {
-    try {
-      const response = await window.api.buscarAlimentos(nomeAlimento);
-      if (response && response.alimentos && response.alimentos.length > 0) {
-        // Encontra o alimento exato (comparação case-insensitive)
-        const alimentoEncontrado =
-          response.alimentos.find(
-            (a) => a.nome.toLowerCase() === nomeAlimento.toLowerCase()
-          ) || response.alimentos[0];
-
-        // Armazena as informações encontradas
-        const nutrientes = {
-          energiaKcal: alimentoEncontrado.energiaKcal || 0,
-          carboidratos: alimentoEncontrado.carboidratos || 0,
-          proteinas: alimentoEncontrado.proteinas || 0,
-          gorduras: alimentoEncontrado.gorduras || 0,
-        };
-        alimentosParaBuscar.set(nomeAlimento, nutrientes);
-        console.log(
-          `DietaView: Nutrientes encontrados para ${nomeAlimento}:`,
-          nutrientes
-        );
-      } else {
-        console.log(`DietaView: Nenhum resultado para ${nomeAlimento}`);
-      }
-    } catch (error) {
-      console.error(`Erro ao buscar nutrientes para ${nomeAlimento}:`, error);
-    }
-  }
-
-  // Aplica as informações nutricionais encontradas aos alimentos
-  let nutrientesAplicados = 0;
-  for (const plano of dieta.planosRefeicao) {
-    if (!plano.refeicoes) continue;
-
-    for (const refeicao of plano.refeicoes) {
-      if (!refeicao.alimentos) continue;
-
-      for (const alimento of refeicao.alimentos) {
-        const temNutrientes =
-          (alimento.energiaKcal && alimento.energiaKcal > 0) ||
-          (alimento.carboidratos && alimento.carboidratos > 0) ||
-          (alimento.proteinas && alimento.proteinas > 0) ||
-          (alimento.gorduras && alimento.gorduras > 0);
-
-        if (!temNutrientes && alimento.nomeAlimento) {
-          const nutrientes = alimentosParaBuscar.get(alimento.nomeAlimento);
-          if (
-            nutrientes &&
-            typeof nutrientes === "object" &&
-            nutrientes.energiaKcal !== undefined
-          ) {
-            // Usa Object.assign para garantir que as propriedades sejam definidas
-            Object.assign(alimento, {
-              energiaKcal: nutrientes.energiaKcal,
-              carboidratos: nutrientes.carboidratos,
-              proteinas: nutrientes.proteinas,
-              gorduras: nutrientes.gorduras,
-            });
-            nutrientesAplicados++;
-            console.log(
-              `DietaView: Aplicados nutrientes a ${alimento.nomeAlimento}:`,
-              nutrientes
-            );
-          }
-        }
-      }
-    }
-  }
-
-  // Força atualização reativa
-  if (nutrientesAplicados > 0) {
-    dietaLocal.value = { ...dietaLocal.value };
-    console.log(
-      `DietaView: Total de nutrientes aplicados: ${nutrientesAplicados}`
-    );
-  }
-}
 
 // Função para calcular valores nutricionais baseado na quantidade
 function calcularValorNutricional(valorPor100g, quantidade) {
@@ -303,50 +209,47 @@ function calcularTotaisDia(plano) {
     gorduras: Math.round(totalGorduras * 10) / 10,
   };
 }
-
-function close() {
-  emit("close");
-}
 </script>
 
 <template>
-  <div class="bg-[#111827] shadow rounded p-6 w-full max-w-none">
-    <div class="flex justify-between items-center mb-6">
-      <h2 class="text-2xl font-bold text-white">Detalhes da Dieta</h2>
-      <button
-        @click="close"
-        class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded transition-colors"
-      >
-        ✕ Fechar
-      </button>
+  <div class="p-6">
+    <h1 class="text-2xl font-bold mb-4 text-white">Minha Dieta</h1>
+
+    <!-- Loading -->
+    <div v-if="loading" class="text-center py-8">
+      <div class="text-gray-400">Carregando sua dieta...</div>
     </div>
 
-    <div v-if="dietaAtual" class="space-y-6">
-      <!-- Informações do Paciente -->
-      <div class="bg-gray-800 border border-gray-700 rounded-lg p-4">
-        <h3 class="text-lg font-semibold text-white mb-3">Paciente</h3>
-        <p class="text-gray-300">
-          {{ getPacienteNome(dietaAtual.idPaciente) }}
-        </p>
-      </div>
+    <!-- Erro ou sem dieta -->
+    <div
+      v-else-if="errorMessage || !dieta"
+      class="bg-gray-800 border border-gray-700 rounded-lg p-6 text-center"
+    >
+      <p class="text-gray-300">
+        {{ errorMessage || "Nenhuma dieta encontrada" }}
+      </p>
+      <p class="text-gray-400 text-sm mt-2">
+        Entre em contato com seu nutricionista para mais informações.
+      </p>
+    </div>
 
+    <!-- Dieta -->
+    <div v-else class="space-y-6">
       <!-- Período da Dieta -->
       <div class="bg-gray-800 border border-gray-700 rounded-lg p-4">
-        <h3 class="text-lg font-semibold text-white mb-3">Período</h3>
+        <h3 class="text-lg font-semibold text-white mb-3">Período da Dieta</h3>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-gray-300">
           <div>
             <span class="font-medium">Data de Início:</span>
-            <p>{{ formatDate(dietaAtual.dataInicio) }}</p>
+            <p>{{ formatDate(dieta.dataInicio) }}</p>
           </div>
           <div>
             <span class="font-medium">Data de Fim:</span>
-            <p>{{ formatDate(dietaAtual.dataFim) }}</p>
+            <p>{{ formatDate(dieta.dataFim) }}</p>
           </div>
           <div>
             <span class="font-medium">Duração:</span>
-            <p>
-              {{ calculateDuration(dietaAtual.dataInicio, dietaAtual.dataFim) }}
-            </p>
+            <p>{{ calculateDuration(dieta.dataInicio, dieta.dataFim) }}</p>
           </div>
         </div>
       </div>
@@ -357,27 +260,29 @@ function close() {
           Descrição da Dieta
         </h3>
         <div class="text-gray-300 whitespace-pre-wrap">
-          {{ dietaAtual.descricao }}
+          {{ dieta.descricao }}
         </div>
       </div>
 
       <!-- Observações -->
       <div
-        v-if="dietaAtual.observacoes"
+        v-if="dieta.observacoes"
         class="bg-gray-800 border border-gray-700 rounded-lg p-4"
       >
         <h3 class="text-lg font-semibold text-white mb-3">Observações</h3>
         <div class="text-gray-300 whitespace-pre-wrap">
-          {{ dietaAtual.observacoes }}
+          {{ dieta.observacoes }}
         </div>
       </div>
 
       <!-- Planos de Refeições -->
       <div
-        v-if="dietaAtual.planosRefeicao && dietaAtual.planosRefeicao.length > 0"
+        v-if="dieta.planosRefeicao && dieta.planosRefeicao.length > 0"
         class="bg-gray-800 border border-gray-700 rounded-lg p-4"
       >
-        <h3 class="text-lg font-semibold text-white mb-4">Plano Alimentar</h3>
+        <h3 class="text-lg font-semibold text-white mb-4">
+          Planos de Refeições
+        </h3>
 
         <div class="space-y-6">
           <div
@@ -524,33 +429,6 @@ function close() {
           Nenhum plano de refeição cadastrado para esta dieta
         </p>
       </div>
-
-      <!-- Informações Adicionais -->
-      <div class="bg-gray-800 border border-gray-700 rounded-lg p-4">
-        <h3 class="text-lg font-semibold text-white mb-3">
-          Informações Adicionais
-        </h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-300">
-          <div>
-            <span class="font-medium">ID da Dieta:</span>
-            <p class="font-mono text-sm">{{ dietaAtual.id }}</p>
-          </div>
-          <div>
-            <span class="font-medium">Nutricionista:</span>
-            <p>{{ loggedUser.name }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Loading -->
-    <div v-else-if="loading" class="text-center py-8">
-      <div class="text-gray-400">Carregando detalhes da dieta...</div>
-    </div>
-
-    <!-- Erro -->
-    <div v-else class="text-center py-8">
-      <div class="text-red-400">Erro ao carregar detalhes da dieta</div>
     </div>
   </div>
 </template>

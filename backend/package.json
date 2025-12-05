@@ -1,4 +1,9 @@
 {
+  "scripts": {
+    "build": "tsc && npm run copy:assets",
+    "copy:assets": "node -e \"const fs=require('fs');const path=require('path');if(!fs.existsSync('dist/assets'))fs.mkdirSync('dist/assets',{recursive:true});fs.copyFileSync('src/assets/Taco-4a-Edicao-tratada.CSV','dist/assets/Taco-4a-Edicao-tratada.CSV');\"",
+    "import:taco": "tsc && node dist/scripts/importarTaco.js"
+  },
   "dependencies": {
     "@types/bcrypt": "^6.0.0",
     "@types/jsonwebtoken": "^9.0.10",

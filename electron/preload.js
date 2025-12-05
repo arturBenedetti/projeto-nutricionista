@@ -15,6 +15,11 @@ contextBridge.exposeInMainWorld("api", {
   excluirPaciente: (data) => ipcRenderer.invoke("excluirPaciente", data),
   // Dieta
   criarDieta: (data) => ipcRenderer.invoke("criar-dieta", data),
+  atualizarDieta: (data) => ipcRenderer.invoke("atualizar-dieta", data),
+  excluirDieta: (data) => ipcRenderer.invoke("excluir-dieta", data),
+  buscarDietaPaciente: (data) => ipcRenderer.invoke("buscar-dieta-paciente", data),
   listarDietas: (data) => ipcRenderer.invoke("listar-dietas", data),
   consultarDieta: (data) => ipcRenderer.invoke("consultar-dieta", data),
+  // Alimento
+  buscarAlimentos: (termo) => ipcRenderer.invoke("buscar-alimentos", termo),
 })
