@@ -387,10 +387,10 @@ function abrirImagem(imagem) {
                 loading="lazy"
               />
               <div
-                class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-opacity rounded-lg flex items-center justify-center pointer-events-none"
+                class="absolute inset-0 group-hover:bg-black/30 group-hover:bg-opacity-30 transition-opacity rounded-lg flex items-center justify-center pointer-events-none"
               >
                 <svg
-                  class="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                  class="w-8 h-8 text-white opacity-10 group-hover:opacity-100 transition-opacity"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
