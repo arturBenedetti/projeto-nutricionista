@@ -13,6 +13,8 @@ contextBridge.exposeInMainWorld("api", {
   consultarDados: (data) => ipcRenderer.invoke("consultarDados", data),
   listarPacientes: (data) => ipcRenderer.invoke("listarPacientes", data),
   excluirPaciente: (data) => ipcRenderer.invoke("excluirPaciente", data),
+  uploadImagemEvolucao: (data) => ipcRenderer.invoke("uploadImagemEvolucao", data),
+  listarImagensEvolucao: (data) => ipcRenderer.invoke("listarImagensEvolucao", data),
   // Dieta
   criarDieta: (data) => ipcRenderer.invoke("criar-dieta", data),
   atualizarDieta: (data) => ipcRenderer.invoke("atualizar-dieta", data),

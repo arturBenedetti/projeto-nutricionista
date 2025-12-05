@@ -1,6 +1,7 @@
 import { IPacienteRepository } from "../../application/interfaces/IPacienteRepository";
 import { Paciente } from "../../domain/entities/Paciente";
 import { Collection, Db } from "mongodb";
+import { EvolutionImagesModel } from "../../domain/models/EvolutionImagesModel";
 
 interface PacienteDocument {
   _id: string;
@@ -13,6 +14,7 @@ interface PacienteDocument {
   peso: number;
   altura: number;
   anamnese: string;
+  evolutionImages: EvolutionImagesModel[];
 }
 
 export class PacienteRepository implements IPacienteRepository {
@@ -34,6 +36,7 @@ export class PacienteRepository implements IPacienteRepository {
       peso: paciente.peso,
       altura: paciente.altura,
       anamnese: paciente.anamnese,
+      evolutionImages: paciente.fotosEvolucao
     };
     await this.collection.insertOne(pacienteDoc);
     return paciente;
@@ -51,13 +54,14 @@ export class PacienteRepository implements IPacienteRepository {
           peso: paciente.peso,
           altura: paciente.altura,
           anamnese: paciente.anamnese,
+          evolutionImages: paciente.fotosEvolucao
         },
       }
     );
 
     const pacienteAtualizado = await this.findById(paciente.id);
     if (!pacienteAtualizado) throw new Error("Erro ao atualizar paciente");
-    
+
     return pacienteAtualizado;
   }
 
@@ -85,7 +89,8 @@ export class PacienteRepository implements IPacienteRepository {
           doc.dataNascimento,
           doc.peso,
           doc.altura,
-          doc.anamnese
+          doc.anamnese,
+          doc.evolutionImages || []
         )
     );
   }
@@ -104,7 +109,8 @@ export class PacienteRepository implements IPacienteRepository {
       document.dataNascimento,
       document.peso,
       document.altura,
-      document.anamnese
+      document.anamnese,
+      document.evolutionImages || []
     );
   }
 
@@ -125,7 +131,8 @@ export class PacienteRepository implements IPacienteRepository {
           doc.dataNascimento,
           doc.peso,
           doc.altura,
-          doc.anamnese
+          doc.anamnese,
+          doc.evolutionImages || []
         )
     );
   }
@@ -147,7 +154,9 @@ export class PacienteRepository implements IPacienteRepository {
       pacienteDoc.dataNascimento,
       pacienteDoc.peso,
       pacienteDoc.altura,
-      pacienteDoc.anamnese
+      pacienteDoc.anamnese,
+      pacienteDoc.evolutionImages || []
     );
   }
+
 }

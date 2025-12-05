@@ -19,4 +19,10 @@ export function pacienteIPC(pacienteController: PacienteController) {
   ipcMain.handle("excluirPaciente", async (_event, data) => {
     return await pacienteController.excluirPaciente(data);
   });
+  ipcMain.handle("uploadImagemEvolucao", async (_event, data) => {
+    return await pacienteController.uploadImagem(data);
+  });
+  ipcMain.handle("listarImagensEvolucao", async (_event, data) => {
+    return await pacienteController.listarImagens(data);
+  });
 }

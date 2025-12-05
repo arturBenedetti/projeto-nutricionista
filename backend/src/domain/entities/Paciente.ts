@@ -1,3 +1,5 @@
+import { EvolutionImagesModel } from "../models/EvolutionImagesModel";
+
 export class Paciente {
   constructor(
     public readonly id: string,
@@ -9,6 +11,7 @@ export class Paciente {
     public dataNascimento: Date,
     public peso: number,
     public altura: number,
-    public anamnese: string
+    public anamnese: string,
+    public fotosEvolucao: EvolutionImagesModel[]
   ) {}
 }
