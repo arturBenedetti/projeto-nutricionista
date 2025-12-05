@@ -1,9 +1,12 @@
 import { IDietaRepository } from "../interfaces/IDietaRepository"
+import { IPacienteRepository } from "../interfaces/IPacienteRepository"
 import { CreateDietaUseCase } from "../../domain/useCases/CreateDietaUseCase"
 import { UpdateDietaUseCase } from "../../domain/useCases/UpdateDietaUseCase"
 import { DeleteDietaUseCase } from "../../domain/useCases/DeleteDietaUseCase"
+import { GetDietaPacienteUseCase } from "../../domain/useCases/GetDietaPacienteUseCase"
 import { CriarDietaDTO } from "../dtos/CriarDietaDTO"
 import { AtualizarDietaDTO } from "../dtos/AtualizarDietaDTO"
+import { BuscarDietaPacienteDTO } from "../dtos/BuscarDietaPacienteDTO"
 import { CriarDietaResponseDTO } from "../dtos/ConsultarDietaResponseDTO"
 import { ListDietasUseCase } from "../../domain/useCases/ListDietasUseCase"
 import { ListarDietasDTO } from "../dtos/ListarDietasDTO"
@@ -15,13 +18,15 @@ export class DietaController {
   private createDietaUseCase: CreateDietaUseCase
   private updateDietaUseCase: UpdateDietaUseCase
   private deleteDietaUseCase: DeleteDietaUseCase
+  private getDietaPacienteUseCase: GetDietaPacienteUseCase
   private listDietasUseCase: ListDietasUseCase
   private getDadosDieta: GetDadosDietaUseCase
 
-  constructor(dietaRepo: IDietaRepository) {
+  constructor(dietaRepo: IDietaRepository, pacienteRepo: IPacienteRepository) {
     this.createDietaUseCase = new CreateDietaUseCase(dietaRepo)
     this.updateDietaUseCase = new UpdateDietaUseCase(dietaRepo)
     this.deleteDietaUseCase = new DeleteDietaUseCase(dietaRepo)
+    this.getDietaPacienteUseCase = new GetDietaPacienteUseCase(dietaRepo, pacienteRepo)
     this.listDietasUseCase = new ListDietasUseCase(dietaRepo)
     this.getDadosDieta = new GetDadosDietaUseCase(dietaRepo)
   }
@@ -47,5 +52,9 @@ export class DietaController {
   async consultarDados(dto: ConsultarDietaDTO): Promise<CriarDietaResponseDTO> {
     const dieta = await this.getDadosDieta.consultarDados(dto.id)
     return dieta
+  }
+
+  async buscarDietaPaciente(dto: BuscarDietaPacienteDTO): Promise<CriarDietaResponseDTO | null> {
+    return await this.getDietaPacienteUseCase.buscarDietaValida(dto.idUsuario)
   }
 }

@@ -118,7 +118,7 @@ async function createWindow() {
     usuarioService
   );
   const dietaRepo = new DietaRepository(db)
-  const dietaController = new DietaController(dietaRepo)
+  const dietaController = new DietaController(dietaRepo, pacienteRepo)
 
   const alimentoRepo = new AlimentoRepository(db)
   const alimentoController = new AlimentoController(alimentoRepo)
