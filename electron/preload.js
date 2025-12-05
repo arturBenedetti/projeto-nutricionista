@@ -15,6 +15,7 @@ contextBridge.exposeInMainWorld("api", {
   excluirPaciente: (data) => ipcRenderer.invoke("excluirPaciente", data),
   uploadImagemEvolucao: (data) => ipcRenderer.invoke("uploadImagemEvolucao", data),
   listarImagensEvolucao: (data) => ipcRenderer.invoke("listarImagensEvolucao", data),
+  excluirImagemEvolucao: (data) => ipcRenderer.invoke("excluirImagemEvolucao", data),
   // Dieta
   criarDieta: (data) => ipcRenderer.invoke("criar-dieta", data),
   atualizarDieta: (data) => ipcRenderer.invoke("atualizar-dieta", data),

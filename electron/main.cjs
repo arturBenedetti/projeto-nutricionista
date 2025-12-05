@@ -86,6 +86,7 @@ async function createWindow() {
     width: savedState?.bounds?.width ?? 1280,
     height: savedState?.bounds?.height ?? 720,
     resizable: true,
+    icon: path.join(__dirname, "../frontend/src/assets/caduceu.png"),
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
