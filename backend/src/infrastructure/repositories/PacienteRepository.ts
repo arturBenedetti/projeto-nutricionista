@@ -54,7 +54,7 @@ export class PacienteRepository implements IPacienteRepository {
           peso: paciente.peso,
           altura: paciente.altura,
           anamnese: paciente.anamnese,
-          fotosEvolucao: paciente.fotosEvolucao
+          evolutionImages: paciente.fotosEvolucao
         },
       }
     );
@@ -90,7 +90,7 @@ export class PacienteRepository implements IPacienteRepository {
           doc.peso,
           doc.altura,
           doc.anamnese,
-          doc.evolutionImages
+          doc.evolutionImages || []
         )
     );
   }
@@ -110,7 +110,7 @@ export class PacienteRepository implements IPacienteRepository {
       document.peso,
       document.altura,
       document.anamnese,
-      document.evolutionImages
+      document.evolutionImages || []
     );
   }
 
@@ -132,7 +132,7 @@ export class PacienteRepository implements IPacienteRepository {
           doc.peso,
           doc.altura,
           doc.anamnese,
-          doc.evolutionImages
+          doc.evolutionImages || []
         )
     );
   }
@@ -155,7 +155,7 @@ export class PacienteRepository implements IPacienteRepository {
       pacienteDoc.peso,
       pacienteDoc.altura,
       pacienteDoc.anamnese,
-      pacienteDoc.evolutionImages
+      pacienteDoc.evolutionImages || []
     );
   }
 

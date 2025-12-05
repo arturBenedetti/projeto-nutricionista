@@ -38,7 +38,8 @@ export class CreatePacienteUseCase {
         pacienteDTO.dataNascimento,
         pacienteDTO.peso,
         pacienteDTO.altura,
-        pacienteDTO.anamnese
+        pacienteDTO.anamnese,
+        [] // Inicializa com array vazio de fotos de evolução
       );
       const novoPaciente = await this.pacienteRepo.save(paciente);
 
