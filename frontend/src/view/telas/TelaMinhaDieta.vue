@@ -30,6 +30,8 @@ async function buscarDieta() {
 
     if (response) {
       dieta.value = response;
+      // Busca informações nutricionais dos alimentos se não estiverem disponíveis
+      await enriquecerAlimentosComNutrientes();
     } else {
       errorMessage.value = "Nenhuma dieta válida encontrada no momento.";
     }
@@ -38,6 +40,58 @@ async function buscarDieta() {
     errorMessage.value = "Erro ao carregar sua dieta. Tente novamente.";
   } finally {
     loading.value = false;
+  }
+}
+
+// Função para buscar informações nutricionais dos alimentos que não as têm
+async function enriquecerAlimentosComNutrientes() {
+  if (!dieta.value?.planosRefeicao) return;
+
+  for (const plano of dieta.value.planosRefeicao) {
+    if (!plano.refeicoes) continue;
+
+    for (const refeicao of plano.refeicoes) {
+      if (!refeicao.alimentos) continue;
+
+      for (const alimento of refeicao.alimentos) {
+        // Se o alimento não tem informações nutricionais, tenta buscar
+        if (
+          !alimento.energiaKcal &&
+          !alimento.carboidratos &&
+          !alimento.proteinas &&
+          !alimento.gorduras &&
+          alimento.nomeAlimento
+        ) {
+          try {
+            const response = await window.api.buscarAlimentos(
+              alimento.nomeAlimento
+            );
+            if (
+              response &&
+              response.alimentos &&
+              response.alimentos.length > 0
+            ) {
+              // Encontra o alimento exato ou o primeiro resultado
+              const alimentoEncontrado =
+                response.alimentos.find(
+                  (a) => a.nome === alimento.nomeAlimento
+                ) || response.alimentos[0];
+
+              // Adiciona informações nutricionais
+              alimento.energiaKcal = alimentoEncontrado.energiaKcal || 0;
+              alimento.carboidratos = alimentoEncontrado.carboidratos || 0;
+              alimento.proteinas = alimentoEncontrado.proteinas || 0;
+              alimento.gorduras = alimentoEncontrado.gorduras || 0;
+            }
+          } catch (error) {
+            console.error(
+              `Erro ao buscar nutrientes para ${alimento.nomeAlimento}:`,
+              error
+            );
+          }
+        }
+      }
+    }
   }
 }
 
@@ -73,6 +127,88 @@ const sortedPlanosRefeicao = computed(() => {
     (a, b) => a.diaSemana - b.diaSemana
   );
 });
+
+// Função para calcular valores nutricionais baseado na quantidade
+function calcularValorNutricional(valorPor100g, quantidade) {
+  if (!valorPor100g || !quantidade) return 0;
+  return (valorPor100g * quantidade) / 100;
+}
+
+// Calcula totais nutricionais para uma refeição específica
+function calcularTotaisRefeicao(refeicao) {
+  if (!refeicao || !refeicao.alimentos || refeicao.alimentos.length === 0) {
+    return {
+      calorias: 0,
+      carboidratos: 0,
+      proteinas: 0,
+      gorduras: 0,
+    };
+  }
+
+  let totalCalorias = 0;
+  let totalCarboidratos = 0;
+  let totalProteinas = 0;
+  let totalGorduras = 0;
+
+  refeicao.alimentos.forEach((alimento) => {
+    const quantidade = alimento.quantidade || 0;
+    totalCalorias += calcularValorNutricional(
+      alimento.energiaKcal || 0,
+      quantidade
+    );
+    totalCarboidratos += calcularValorNutricional(
+      alimento.carboidratos || 0,
+      quantidade
+    );
+    totalProteinas += calcularValorNutricional(
+      alimento.proteinas || 0,
+      quantidade
+    );
+    totalGorduras += calcularValorNutricional(
+      alimento.gorduras || 0,
+      quantidade
+    );
+  });
+
+  return {
+    calorias: Math.round(totalCalorias * 10) / 10,
+    carboidratos: Math.round(totalCarboidratos * 10) / 10,
+    proteinas: Math.round(totalProteinas * 10) / 10,
+    gorduras: Math.round(totalGorduras * 10) / 10,
+  };
+}
+
+// Calcula totais nutricionais para um dia específico
+function calcularTotaisDia(plano) {
+  if (!plano || !plano.refeicoes || plano.refeicoes.length === 0) {
+    return {
+      calorias: 0,
+      carboidratos: 0,
+      proteinas: 0,
+      gorduras: 0,
+    };
+  }
+
+  let totalCalorias = 0;
+  let totalCarboidratos = 0;
+  let totalProteinas = 0;
+  let totalGorduras = 0;
+
+  plano.refeicoes.forEach((refeicao) => {
+    const totaisRefeicao = calcularTotaisRefeicao(refeicao);
+    totalCalorias += totaisRefeicao.calorias;
+    totalCarboidratos += totaisRefeicao.carboidratos;
+    totalProteinas += totaisRefeicao.proteinas;
+    totalGorduras += totaisRefeicao.gorduras;
+  });
+
+  return {
+    calorias: Math.round(totalCalorias * 10) / 10,
+    carboidratos: Math.round(totalCarboidratos * 10) / 10,
+    proteinas: Math.round(totalProteinas * 10) / 10,
+    gorduras: Math.round(totalGorduras * 10) / 10,
+  };
+}
 </script>
 
 <template>
@@ -89,7 +225,9 @@ const sortedPlanosRefeicao = computed(() => {
       v-else-if="errorMessage || !dieta"
       class="bg-gray-800 border border-gray-700 rounded-lg p-6 text-center"
     >
-      <p class="text-gray-300">{{ errorMessage || "Nenhuma dieta encontrada" }}</p>
+      <p class="text-gray-300">
+        {{ errorMessage || "Nenhuma dieta encontrada" }}
+      </p>
       <p class="text-gray-400 text-sm mt-2">
         Entre em contato com seu nutricionista para mais informações.
       </p>
@@ -152,13 +290,45 @@ const sortedPlanosRefeicao = computed(() => {
             :key="plano.id || plano.diaSemana"
             class="border border-gray-600 rounded-lg p-4"
           >
-            <h4 class="text-md font-semibold text-teal-400 mb-3">
-              {{ getNomeDiaSemana(plano.diaSemana) }}
-            </h4>
+            <div class="flex items-center justify-between mb-3">
+              <h4 class="text-md font-semibold text-teal-400">
+                {{ getNomeDiaSemana(plano.diaSemana) }}
+              </h4>
+              <!-- Totais do Dia -->
+              <div
+                v-if="plano.refeicoes && plano.refeicoes.length > 0"
+                class="flex gap-4 text-sm"
+              >
+                <div class="text-gray-300">
+                  <span class="text-gray-400">Calorias:</span>
+                  <span class="font-medium ml-1">
+                    {{ calcularTotaisDia(plano).calorias }} kcal
+                  </span>
+                </div>
+                <div class="text-gray-300">
+                  <span class="text-gray-400">Carb:</span>
+                  <span class="font-medium ml-1">
+                    {{ calcularTotaisDia(plano).carboidratos }}g
+                  </span>
+                </div>
+                <div class="text-gray-300">
+                  <span class="text-gray-400">Prot:</span>
+                  <span class="font-medium ml-1">
+                    {{ calcularTotaisDia(plano).proteinas }}g
+                  </span>
+                </div>
+                <div class="text-gray-300">
+                  <span class="text-gray-400">Gord:</span>
+                  <span class="font-medium ml-1">
+                    {{ calcularTotaisDia(plano).gorduras }}g
+                  </span>
+                </div>
+              </div>
+            </div>
 
             <div
               v-if="plano.refeicoes && plano.refeicoes.length > 0"
-              class="space-y-4"
+              class="grid grid-cols-1 md:grid-cols-2 gap-4"
             >
               <div
                 v-for="(refeicao, indexRefeicao) in plano.refeicoes"
@@ -169,6 +339,36 @@ const sortedPlanosRefeicao = computed(() => {
                   <h5 class="text-base font-medium text-white">
                     {{ refeicao.nome }}
                   </h5>
+                  <!-- Totais da Refeição -->
+                  <div
+                    v-if="refeicao.alimentos && refeicao.alimentos.length > 0"
+                    class="flex gap-3 text-xs text-gray-300"
+                  >
+                    <span>
+                      <span class="text-gray-400">Cal:</span>
+                      <span class="font-medium ml-1">
+                        {{ calcularTotaisRefeicao(refeicao).calorias }} kcal
+                      </span>
+                    </span>
+                    <span>
+                      <span class="text-gray-400">C:</span>
+                      <span class="font-medium ml-1">
+                        {{ calcularTotaisRefeicao(refeicao).carboidratos }}g
+                      </span>
+                    </span>
+                    <span>
+                      <span class="text-gray-400">P:</span>
+                      <span class="font-medium ml-1">
+                        {{ calcularTotaisRefeicao(refeicao).proteinas }}g
+                      </span>
+                    </span>
+                    <span>
+                      <span class="text-gray-400">G:</span>
+                      <span class="font-medium ml-1">
+                        {{ calcularTotaisRefeicao(refeicao).gorduras }}g
+                      </span>
+                    </span>
+                  </div>
                 </div>
 
                 <!-- Alimentos da Refeição -->
@@ -221,10 +421,7 @@ const sortedPlanosRefeicao = computed(() => {
       </div>
 
       <!-- Mensagem quando não há planos de refeição -->
-      <div
-        v-else
-        class="bg-gray-800 border border-gray-700 rounded-lg p-4"
-      >
+      <div v-else class="bg-gray-800 border border-gray-700 rounded-lg p-4">
         <h3 class="text-lg font-semibold text-white mb-3">
           Planos de Refeições
         </h3>
@@ -241,5 +438,3 @@ const sortedPlanosRefeicao = computed(() => {
   white-space: pre-wrap;
 }
 </style>
-
-

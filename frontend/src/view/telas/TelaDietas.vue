@@ -11,14 +11,13 @@
       @delete="onDelete"
     />
 
-    <DietaForm
-      v-if="showForm"
-      :dieta="selectedDieta"
-      @cancel="onCancel"
-      @saved="onSaved"
-    />
+    <div v-if="showForm" class="w-full">
+      <DietaForm :dieta="selectedDieta" @cancel="onCancel" @saved="onSaved" />
+    </div>
 
-    <DietaView v-if="viewMode" :dieta="selectedDieta" @close="onCancel" />
+    <div v-if="viewMode" class="w-full">
+      <DietaView :dieta="selectedDieta" @close="onCancel" />
+    </div>
   </div>
 </template>
 

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted } from "vue";
+import { ref, watch, onMounted, computed, nextTick } from "vue";
 import { loggedUser } from "../../services/UsuarioService";
 
 const props = defineProps({ dieta: Object });
@@ -64,19 +64,55 @@ async function fetchPacientes() {
 
 const dietaId = ref("");
 
+// Função para converter data ISO para formato YYYY-MM-DD
+function formatarDataParaInput(dataString) {
+  if (!dataString) return "";
+  try {
+    // Se a string já está no formato YYYY-MM-DD, retorna diretamente
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dataString)) {
+      return dataString;
+    }
+
+    // Tenta extrair diretamente da string ISO (formato: YYYY-MM-DDTHH:mm:ss.sssZ)
+    const isoMatch = dataString.match(/^(\d{4}-\d{2}-\d{2})/);
+    if (isoMatch) {
+      return isoMatch[1];
+    }
+
+    // Se não conseguir extrair diretamente, usa Date
+    const date = new Date(dataString);
+    if (isNaN(date.getTime())) return "";
+
+    // Usa UTC para evitar problemas de timezone
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(date.getUTCDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  } catch (error) {
+    console.error("Erro ao formatar data:", error, dataString);
+    return "";
+  }
+}
+
 watch(
   () => props.dieta,
-  (newVal) => {
+  async (newVal) => {
     if (newVal) {
       dietaId.value = newVal.id || "";
+      // Faz uma cópia profunda para poder modificar os alimentos
       localDieta.value = {
         idPaciente: newVal.idPaciente || "",
-        dataInicio: newVal.dataInicio || "",
-        dataFim: newVal.dataFim || "",
+        // Converte as datas do formato ISO para YYYY-MM-DD
+        dataInicio: formatarDataParaInput(newVal.dataInicio) || "",
+        dataFim: formatarDataParaInput(newVal.dataFim) || "",
         descricao: newVal.descricao || "",
         observacoes: newVal.observacoes || "",
-        planosRefeicao: newVal.planosRefeicao || [],
+        planosRefeicao: JSON.parse(JSON.stringify(newVal.planosRefeicao || [])),
       };
+      // Aguarda o próximo tick do Vue para garantir que a reatividade foi aplicada
+      await nextTick();
+      // Busca informações nutricionais dos alimentos se não estiverem disponíveis
+      await enriquecerAlimentosComNutrientes();
     } else {
       dietaId.value = "";
       localDieta.value = {
@@ -137,7 +173,7 @@ function getBuscaKey(diaSemana, indexRefeicao) {
   return `${diaSemana}-${indexRefeicao}`;
 }
 
-async function buscarAlimentos(diaSemana, indexRefeicao) {
+async function buscarAlimentos(diaSemana, indexRefeicao, inputElement = null) {
   const key = getBuscaKey(diaSemana, indexRefeicao);
   const termo = buscaAlimento.value[key] || "";
 
@@ -145,6 +181,9 @@ async function buscarAlimentos(diaSemana, indexRefeicao) {
     resultadosBusca.value[key] = [];
     return;
   }
+
+  // Salva o elemento de input para restaurar o foco depois
+  const inputRef = inputElement;
 
   buscandoAlimentos.value[key] = true;
   try {
@@ -159,6 +198,15 @@ async function buscarAlimentos(diaSemana, indexRefeicao) {
     resultadosBusca.value[key] = [];
   } finally {
     buscandoAlimentos.value[key] = false;
+    // Restaura o foco no campo de input após a busca, se ainda estiver montado
+    if (inputRef && document.activeElement !== inputRef) {
+      // Usa nextTick para garantir que o DOM foi atualizado
+      await nextTick();
+      // Verifica se o elemento ainda existe no DOM antes de focar
+      if (document.body.contains(inputRef)) {
+        inputRef.focus();
+      }
+    }
   }
 }
 
@@ -169,6 +217,11 @@ function adicionarAlimento(diaSemana, indexRefeicao, alimento) {
       idAlimento: alimento.id,
       nomeAlimento: alimento.nome,
       quantidade: 100, // quantidade padrão em gramas
+      // Armazena informações nutricionais por 100g para cálculo
+      energiaKcal: alimento.energiaKcal || 0,
+      carboidratos: alimento.carboidratos || 0,
+      proteinas: alimento.proteinas || 0,
+      gorduras: alimento.gorduras || 0,
     });
     const key = getBuscaKey(diaSemana, indexRefeicao);
     buscaAlimento.value[key] = "";
@@ -180,6 +233,105 @@ function removerAlimento(diaSemana, indexRefeicao, indexAlimento) {
   const plano = getPlanoPorDia(diaSemana);
   if (plano && plano.refeicoes[indexRefeicao]) {
     plano.refeicoes[indexRefeicao].alimentos.splice(indexAlimento, 1);
+  }
+}
+
+// Função para buscar informações nutricionais dos alimentos que não as têm
+async function enriquecerAlimentosComNutrientes() {
+  if (!localDieta.value?.planosRefeicao) return;
+
+  // Coleta todos os alimentos únicos que precisam de informações nutricionais
+  const alimentosParaBuscar = new Map();
+
+  for (const plano of localDieta.value.planosRefeicao) {
+    if (!plano.refeicoes) continue;
+
+    for (const refeicao of plano.refeicoes) {
+      if (!refeicao.alimentos) continue;
+
+      for (const alimento of refeicao.alimentos) {
+        // Se o alimento não tem informações nutricionais (undefined, null ou 0), adiciona à lista de busca
+        const temNutrientes =
+          (alimento.energiaKcal && alimento.energiaKcal > 0) ||
+          (alimento.carboidratos && alimento.carboidratos > 0) ||
+          (alimento.proteinas && alimento.proteinas > 0) ||
+          (alimento.gorduras && alimento.gorduras > 0);
+
+        if (
+          !temNutrientes &&
+          alimento.nomeAlimento &&
+          !alimentosParaBuscar.has(alimento.nomeAlimento)
+        ) {
+          alimentosParaBuscar.set(alimento.nomeAlimento, []);
+        }
+      }
+    }
+  }
+
+  // Busca informações nutricionais para cada alimento único
+  for (const [nomeAlimento, alimentos] of alimentosParaBuscar) {
+    try {
+      const response = await window.api.buscarAlimentos(nomeAlimento);
+      if (response && response.alimentos && response.alimentos.length > 0) {
+        // Encontra o alimento exato (comparação case-insensitive)
+        const alimentoEncontrado =
+          response.alimentos.find(
+            (a) => a.nome.toLowerCase() === nomeAlimento.toLowerCase()
+          ) || response.alimentos[0];
+
+        // Armazena as informações encontradas
+        const nutrientes = {
+          energiaKcal: alimentoEncontrado.energiaKcal || 0,
+          carboidratos: alimentoEncontrado.carboidratos || 0,
+          proteinas: alimentoEncontrado.proteinas || 0,
+          gorduras: alimentoEncontrado.gorduras || 0,
+        };
+        alimentosParaBuscar.set(nomeAlimento, nutrientes);
+      }
+    } catch (error) {
+      console.error(`Erro ao buscar nutrientes para ${nomeAlimento}:`, error);
+    }
+  }
+
+  // Aplica as informações nutricionais encontradas aos alimentos
+  let nutrientesAplicados = 0;
+  for (const plano of localDieta.value.planosRefeicao) {
+    if (!plano.refeicoes) continue;
+
+    for (const refeicao of plano.refeicoes) {
+      if (!refeicao.alimentos) continue;
+
+      for (const alimento of refeicao.alimentos) {
+        const temNutrientes =
+          (alimento.energiaKcal && alimento.energiaKcal > 0) ||
+          (alimento.carboidratos && alimento.carboidratos > 0) ||
+          (alimento.proteinas && alimento.proteinas > 0) ||
+          (alimento.gorduras && alimento.gorduras > 0);
+
+        if (!temNutrientes && alimento.nomeAlimento) {
+          const nutrientes = alimentosParaBuscar.get(alimento.nomeAlimento);
+          if (
+            nutrientes &&
+            typeof nutrientes === "object" &&
+            nutrientes.energiaKcal !== undefined
+          ) {
+            // Usa Object.assign para garantir que as propriedades sejam definidas
+            Object.assign(alimento, {
+              energiaKcal: nutrientes.energiaKcal,
+              carboidratos: nutrientes.carboidratos,
+              proteinas: nutrientes.proteinas,
+              gorduras: nutrientes.gorduras,
+            });
+            nutrientesAplicados++;
+          }
+        }
+      }
+    }
+  }
+
+  // Força atualização reativa se nutrientes foram aplicados
+  if (nutrientesAplicados > 0) {
+    localDieta.value = { ...localDieta.value };
   }
 }
 
@@ -308,17 +460,75 @@ async function save() {
 function cancel() {
   emit("cancel");
 }
+
+// Função para calcular valores nutricionais baseado na quantidade
+function calcularValorNutricional(valorPor100g, quantidade) {
+  if (!valorPor100g || !quantidade) return 0;
+  return (valorPor100g * quantidade) / 100;
+}
+
+// Calcula totais nutricionais para um dia específico
+function calcularTotaisDia(diaSemana) {
+  const plano = getPlanoPorDia(diaSemana);
+  if (!plano || !plano.refeicoes) {
+    return {
+      calorias: 0,
+      carboidratos: 0,
+      proteinas: 0,
+      gorduras: 0,
+    };
+  }
+
+  let totalCalorias = 0;
+  let totalCarboidratos = 0;
+  let totalProteinas = 0;
+  let totalGorduras = 0;
+
+  plano.refeicoes.forEach((refeicao) => {
+    if (refeicao.alimentos && refeicao.alimentos.length > 0) {
+      refeicao.alimentos.forEach((alimento) => {
+        const quantidade = alimento.quantidade || 0;
+        totalCalorias += calcularValorNutricional(
+          alimento.energiaKcal || 0,
+          quantidade
+        );
+        totalCarboidratos += calcularValorNutricional(
+          alimento.carboidratos || 0,
+          quantidade
+        );
+        totalProteinas += calcularValorNutricional(
+          alimento.proteinas || 0,
+          quantidade
+        );
+        totalGorduras += calcularValorNutricional(
+          alimento.gorduras || 0,
+          quantidade
+        );
+      });
+    }
+  });
+
+  return {
+    calorias: Math.round(totalCalorias * 10) / 10,
+    carboidratos: Math.round(totalCarboidratos * 10) / 10,
+    proteinas: Math.round(totalProteinas * 10) / 10,
+    gorduras: Math.round(totalGorduras * 10) / 10,
+  };
+}
 </script>
 
 <template>
-  <form @submit.prevent="save" class="bg-[#111827] shadow rounded p-6">
+  <form
+    @submit.prevent="save"
+    class="bg-[#111827] shadow rounded p-6 w-full max-w-none"
+  >
     <h3 class="text-xl font-semibold mb-4 text-white">
       {{ dieta ? "Editar Dieta" : "Nova Dieta" }}
     </h3>
 
-    <div class="space-y-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <!-- Seleção de Paciente -->
-      <div>
+      <div class="md:col-span-2">
         <label class="block text-sm font-medium text-gray-300 mb-2">
           Paciente *
         </label>
@@ -365,7 +575,7 @@ function cancel() {
       </div>
 
       <!-- Descrição -->
-      <div>
+      <div class="md:col-span-2">
         <label class="block text-sm font-medium text-gray-300 mb-2">
           Descrição da Dieta *
         </label>
@@ -379,7 +589,7 @@ function cancel() {
       </div>
 
       <!-- Observações -->
-      <div>
+      <div class="md:col-span-2">
         <label class="block text-sm font-medium text-gray-300 mb-2">
           Observações
         </label>
@@ -393,9 +603,9 @@ function cancel() {
       </div>
 
       <!-- Planos de Refeições por Dia da Semana -->
-      <div class="mt-6">
+      <div class="md:col-span-2 mt-6">
         <h4 class="text-lg font-semibold text-white mb-4">
-          Planos de Refeições por Dia da Semana
+          Planos Alimentar por Dia da Semana
         </h4>
 
         <div class="space-y-6">
@@ -416,8 +626,51 @@ function cancel() {
               </button>
             </div>
 
+            <!-- Totais Nutricionais do Dia -->
+            <div
+              v-if="
+                getPlanoPorDia(dia.valor) &&
+                getPlanoPorDia(dia.valor).refeicoes &&
+                getPlanoPorDia(dia.valor).refeicoes.length > 0
+              "
+              class="mb-3 p-3 bg-teal-900/30 border border-teal-700/50 rounded-lg"
+            >
+              <h6 class="text-sm font-semibold text-teal-300 mb-2">
+                Totais do Dia
+              </h6>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                <div>
+                  <span class="text-gray-400">Calorias:</span>
+                  <p class="text-white font-medium">
+                    {{ calcularTotaisDia(dia.valor).calorias }} kcal
+                  </p>
+                </div>
+                <div>
+                  <span class="text-gray-400">Carboidratos:</span>
+                  <p class="text-white font-medium">
+                    {{ calcularTotaisDia(dia.valor).carboidratos }}g
+                  </p>
+                </div>
+                <div>
+                  <span class="text-gray-400">Proteínas:</span>
+                  <p class="text-white font-medium">
+                    {{ calcularTotaisDia(dia.valor).proteinas }}g
+                  </p>
+                </div>
+                <div>
+                  <span class="text-gray-400">Gorduras:</span>
+                  <p class="text-white font-medium">
+                    {{ calcularTotaisDia(dia.valor).gorduras }}g
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <!-- Lista de Refeições do Dia -->
-            <div v-if="getPlanoPorDia(dia.valor)" class="space-y-4 mt-3">
+            <div
+              v-if="getPlanoPorDia(dia.valor)"
+              class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3"
+            >
               <div
                 v-for="(refeicao, indexRefeicao) in getPlanoPorDia(dia.valor)
                   .refeicoes"
@@ -459,18 +712,24 @@ function cancel() {
                     @input="
                       (e) => {
                         const key = `${dia.valor}-${indexRefeicao}`;
-                        buscaAlimento[key] = e.target.value;
-                        buscarAlimentos(dia.valor, indexRefeicao);
+                        const inputElement = e.target;
+                        buscaAlimento[key] = inputElement.value;
+                        buscarAlimentos(dia.valor, indexRefeicao, inputElement);
                       }
                     "
                     placeholder="Buscar alimento..."
-                    class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    :disabled="
-                      loading ||
-                      buscandoAlimentos[`${dia.valor}-${indexRefeicao}`] ||
-                      false
-                    "
+                    class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 pr-10 text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    :disabled="loading"
                   />
+                  <!-- Indicador de busca -->
+                  <div
+                    v-if="buscandoAlimentos[`${dia.valor}-${indexRefeicao}`]"
+                    class="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none"
+                  >
+                    <div
+                      class="animate-spin rounded-full h-4 w-4 border-b-2 border-teal-400"
+                    ></div>
+                  </div>
                   <div
                     v-if="
                       (resultadosBusca[`${dia.valor}-${indexRefeicao}`] || [])
