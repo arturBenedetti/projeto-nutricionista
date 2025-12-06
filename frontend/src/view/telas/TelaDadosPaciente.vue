@@ -35,6 +35,9 @@ const localPaciente = ref({
 const imagensAgrupadas = ref([]);
 const uploading = ref(false);
 const fileInputRef = ref(null);
+const showPesoModal = ref(false);
+const selectedFile = ref(null);
+const pesoImagem = ref("");
 
 async function fetchData() {
   const response = await window.api.consultarDados({
@@ -83,6 +86,7 @@ async function fetchImagens() {
         dataCompleta: grupo.dataCompleta
           ? new Date(grupo.dataCompleta)
           : new Date(grupo.data),
+        peso: grupo.peso ? parseFloat(grupo.peso) : undefined,
         imagens: (grupo.imagens || []).map((img) => ({
           ...img,
           date: img.date ? new Date(img.date) : new Date(),
@@ -124,17 +128,40 @@ async function handleFileSelect(event) {
     return;
   }
 
+  // Verifica se já existe peso para o dia de hoje
+  const hoje = new Date().toISOString().split("T")[0];
+  const grupoHoje = imagensAgrupadas.value.find((g) => g.data === hoje);
+  const pesoDoDia = grupoHoje?.peso;
+
+  // Se já existe peso para o dia, faz upload direto sem pedir peso
+  if (pesoDoDia) {
+    await fazerUploadImagem(file, pesoDoDia);
+  } else {
+    // Se não existe peso, abre modal para informar
+    selectedFile.value = file;
+    pesoImagem.value = "";
+    showPesoModal.value = true;
+  }
+
+  // Limpa o input para permitir selecionar o mesmo arquivo novamente
+  if (fileInputRef.value) {
+    fileInputRef.value.value = "";
+  }
+}
+
+async function fazerUploadImagem(file, peso) {
   uploading.value = true;
 
   try {
     // Converte a imagem para base64
     const base64 = await fileToBase64(file);
 
-    // Faz upload da imagem
+    // Faz upload da imagem com o peso
     const sucesso = await window.api.uploadImagemEvolucao({
       idPaciente: localPaciente.value.id,
       imageBase64: base64,
       mimeType: file.type,
+      peso: peso,
     });
 
     if (sucesso) {
@@ -149,10 +176,60 @@ async function handleFileSelect(event) {
     alert("Erro ao enviar imagem. Tente novamente.");
   } finally {
     uploading.value = false;
-    // Limpa o input
-    if (fileInputRef.value) {
-      fileInputRef.value.value = "";
+  }
+}
+
+async function confirmarUpload() {
+  if (!selectedFile.value) return;
+
+  // Valida o peso
+  const peso = parseFloat(pesoImagem.value);
+  if (isNaN(peso) || peso <= 0) {
+    alert("Por favor, informe um peso válido (maior que zero).");
+    return;
+  }
+
+  showPesoModal.value = false;
+  const file = selectedFile.value;
+  selectedFile.value = null;
+  pesoImagem.value = "";
+
+  await fazerUploadImagem(file, peso);
+}
+
+function cancelarUpload() {
+  showPesoModal.value = false;
+  selectedFile.value = null;
+  pesoImagem.value = "";
+}
+
+async function excluirImagem(dataImagem, indexImagem) {
+  // Confirmação antes de excluir
+  const confirmar = confirm(
+    "Tem certeza que deseja excluir esta foto?\n\nEsta ação não pode ser desfeita."
+  );
+
+  if (!confirmar) {
+    return;
+  }
+
+  try {
+    const sucesso = await window.api.excluirImagemEvolucao({
+      idPaciente: localPaciente.value.id,
+      dataImagem: dataImagem,
+      indexImagem: indexImagem,
+    });
+
+    if (sucesso) {
+      // Recarrega as imagens
+      await fetchImagens();
+      alert("Foto excluída com sucesso!");
+    } else {
+      alert("Erro ao excluir foto. Tente novamente.");
     }
+  } catch (error) {
+    console.error("Erro ao excluir foto:", error);
+    alert("Erro ao excluir foto. Tente novamente.");
   }
 }
 
@@ -340,10 +417,16 @@ function abrirImagem(imagem) {
           @change="handleFileSelect"
           class="hidden"
           id="fileInput"
+          :disabled="uploading"
         />
         <label
           for="fileInput"
-          class="inline-flex items-center px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg cursor-pointer transition-colors"
+          :class="[
+            'inline-flex items-center px-4 py-2 font-medium rounded-lg cursor-pointer transition-colors',
+            uploading
+              ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+              : 'bg-teal-600 hover:bg-teal-700 text-white',
+          ]"
         >
           <svg
             class="w-5 h-5 mr-2"
@@ -362,6 +445,55 @@ function abrirImagem(imagem) {
         </label>
       </div>
 
+      <!-- Modal para informar o peso -->
+      <div
+        v-if="showPesoModal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+        @click.self="cancelarUpload"
+      >
+        <div
+          class="bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 border border-gray-700"
+        >
+          <h3 class="text-xl font-bold text-white mb-4">
+            Informar Peso do Dia
+          </h3>
+          <p class="text-gray-300 mb-4">
+            Esta é a primeira foto de hoje. Por favor, informe o seu peso (em
+            kg):
+          </p>
+          <p class="text-gray-400 text-sm mb-4">
+            Nota: Este peso será associado a todas as fotos enviadas hoje.
+          </p>
+          <div class="mb-4">
+            <label class="block text-gray-300 mb-2">Peso (kg)</label>
+            <input
+              v-model="pesoImagem"
+              type="number"
+              step="0.1"
+              min="0"
+              placeholder="Ex: 75.5"
+              class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-teal-500"
+              @keyup.enter="confirmarUpload"
+              autofocus
+            />
+          </div>
+          <div class="flex gap-3 justify-end">
+            <button
+              @click="cancelarUpload"
+              class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              @click="confirmarUpload"
+              class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors"
+            >
+              Confirmar
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Lista de Imagens Agrupadas por Data -->
       <div v-if="imagensAgrupadas.length > 0" class="space-y-6">
         <div
@@ -369,28 +501,57 @@ function abrirImagem(imagem) {
           :key="grupo.data"
           class="bg-gray-800 border border-gray-700 rounded-lg p-4"
         >
-          <h3 class="text-lg font-semibold text-teal-400 mb-4">
-            {{ formatarData(grupo.data) }}
-          </h3>
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-teal-400">
+              {{ formatarData(grupo.data) }}
+              <span
+                v-if="grupo.peso"
+                class="ml-3 text-base font-normal text-gray-300"
+              >
+                - {{ grupo.peso.toFixed(1) }} kg
+              </span>
+            </h3>
+          </div>
           <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             <div
               v-for="(imagem, index) in grupo.imagens"
               :key="index"
-              class="relative group cursor-pointer bg-gray-700 rounded-lg overflow-hidden"
-              @click="abrirImagem(imagem)"
+              class="relative group bg-gray-700 rounded-lg overflow-hidden"
             >
-              <img
-                :src="getImageSrc(imagem)"
-                :alt="`Foto de evolução - ${formatarData(grupo.data)}`"
-                class="w-full h-48 object-cover rounded-lg border-2 border-gray-600 hover:border-teal-400 transition-colors"
-                @error="handleImageError"
-                loading="lazy"
-              />
-              <div
-                class="absolute inset-0 group-hover:bg-black/30 group-hover:bg-opacity-30 transition-opacity rounded-lg flex items-center justify-center pointer-events-none"
+              <div class="cursor-pointer" @click="abrirImagem(imagem)">
+                <img
+                  :src="getImageSrc(imagem)"
+                  :alt="`Foto de evolução - ${formatarData(grupo.data)}`"
+                  class="w-full h-48 object-cover rounded-lg border-2 border-gray-600 hover:border-teal-400 transition-colors"
+                  @error="handleImageError"
+                  loading="lazy"
+                />
+                <div
+                  class="absolute inset-0 group-hover:bg-black/30 group-hover:bg-opacity-30 transition-opacity rounded-lg flex items-center justify-center pointer-events-none"
+                >
+                  <svg
+                    class="w-8 h-8 text-white opacity-10 group-hover:opacity-100 transition-opacity"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
+                    />
+                  </svg>
+                </div>
+              </div>
+              <!-- Botão de exclusão -->
+              <button
+                @click.stop="excluirImagem(grupo.data, index)"
+                class="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                title="Excluir foto"
               >
                 <svg
-                  class="w-8 h-8 text-white opacity-10 group-hover:opacity-100 transition-opacity"
+                  class="w-4 h-4"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -399,10 +560,10 @@ function abrirImagem(imagem) {
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="2"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                   />
                 </svg>
-              </div>
+              </button>
             </div>
           </div>
         </div>
@@ -443,7 +604,7 @@ function abrirImagem(imagem) {
 }
 
 h1 {
-  color: rgb(180, 180, 250);
+  color: white;
   margin-bottom: 10px;
 }
 

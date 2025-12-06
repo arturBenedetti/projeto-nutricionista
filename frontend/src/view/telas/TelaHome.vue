@@ -1,8 +1,5 @@
 <template>
-  <div class="principal">
-    <h2>Página Inicial</h2>
-    <p>Bem-vindo à aplicação Vue com layout fixo!</p>
-  </div>
+  <div class="principal"></div>
 </template>
 
 <style scoped>

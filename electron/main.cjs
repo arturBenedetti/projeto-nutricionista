@@ -86,6 +86,7 @@ async function createWindow() {
     width: savedState?.bounds?.width ?? 1280,
     height: savedState?.bounds?.height ?? 720,
     resizable: true,
+    icon: path.join(__dirname, "../frontend/src/assets/caduceu.png"),
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
@@ -130,7 +131,14 @@ async function createWindow() {
   dietaIPC(dietaController)
   alimentoIPC(alimentoController)
 
+
+  const isDev = process.env.NODE_ENV !== 'production';
+
+if (isDev) {
   mainWindow.loadURL("http://localhost:5173");
+} else {
+  mainWindow.loadFile(path.join(__dirname, "../frontend/dist/index.html"));
+}
 
   if (!savedState) {
     mainWindow.maximize();

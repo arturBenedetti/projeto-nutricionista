@@ -5,10 +5,7 @@ import { loggedUser } from "../../services/UsuarioService"
 <template>
   <aside class="sidebar">
     <nav>
-      <ul>
-        <li>
-          <router-link to="/home" exact-active-class="active">Home</router-link>
-        </li>
+      <ul>        
         <li>
           <router-link
             v-if="loggedUser.isNutricionista"
