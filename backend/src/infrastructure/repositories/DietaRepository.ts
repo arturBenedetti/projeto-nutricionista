@@ -1,6 +1,28 @@
 import { IDietaRepository } from "../../application/interfaces/IDietaRepository"
 import { Dieta } from "../../domain/entities/Dieta"
+import { PlanoRefeicao } from "../../domain/entities/PlanoRefeicao"
+import { Refeicao } from "../../domain/entities/Refeicao"
+import { AlimentoRefeicao } from "../../domain/entities/AlimentoRefeicao"
 import { Collection, Db } from "mongodb"
+
+interface AlimentoRefeicaoDocument {
+  idAlimento: string
+  quantidade: number
+  nomeAlimento?: string
+}
+
+interface RefeicaoDocument {
+  id: string
+  nome: string
+  alimentos: AlimentoRefeicaoDocument[]
+  observacao?: string
+}
+
+interface PlanoRefeicaoDocument {
+  id: string
+  diaSemana: number
+  refeicoes: RefeicaoDocument[]
+}
 
 interface DietaDocument {
   _id: string
@@ -10,6 +32,7 @@ interface DietaDocument {
   dataFim: Date
   descricao: string
   observacoes?: string
+  planosRefeicao?: PlanoRefeicaoDocument[]
 }
 
 export class DietaRepository implements IDietaRepository {
@@ -28,6 +51,22 @@ export class DietaRepository implements IDietaRepository {
       dataFim: dieta.dataFim,
       descricao: dieta.descricao,
       ...(dieta.observacoes && { observacoes: dieta.observacoes }),
+      ...(dieta.planosRefeicao && {
+        planosRefeicao: dieta.planosRefeicao.map((plano) => ({
+          id: plano.id,
+          diaSemana: plano.diaSemana,
+          refeicoes: plano.refeicoes.map((refeicao) => ({
+            id: refeicao.id,
+            nome: refeicao.nome,
+            alimentos: refeicao.alimentos.map((alimento) => ({
+              idAlimento: alimento.idAlimento,
+              quantidade: alimento.quantidade,
+              ...(alimento.nomeAlimento && { nomeAlimento: alimento.nomeAlimento }),
+            })),
+            ...(refeicao.observacao && { observacao: refeicao.observacao }),
+          })),
+        })),
+      }),
     }
 
     await this.collection.insertOne(dietaDoc)
@@ -65,6 +104,22 @@ export class DietaRepository implements IDietaRepository {
     if (dieta.descricao) updateData.descricao = dieta.descricao
     if (dieta.observacoes !== undefined)
       updateData.observacoes = dieta.observacoes
+    if (dieta.planosRefeicao !== undefined) {
+      updateData.planosRefeicao = dieta.planosRefeicao.map((plano) => ({
+        id: plano.id,
+        diaSemana: plano.diaSemana,
+        refeicoes: plano.refeicoes.map((refeicao) => ({
+          id: refeicao.id,
+          nome: refeicao.nome,
+          alimentos: refeicao.alimentos.map((alimento) => ({
+            idAlimento: alimento.idAlimento,
+            quantidade: alimento.quantidade,
+            ...(alimento.nomeAlimento && { nomeAlimento: alimento.nomeAlimento }),
+          })),
+          ...(refeicao.observacao && { observacao: refeicao.observacao }),
+        })),
+      }))
+    }
 
     const result = await this.collection.findOneAndUpdate(
       { _id: id },
@@ -81,6 +136,29 @@ export class DietaRepository implements IDietaRepository {
   }
 
   private documentToEntity(doc: DietaDocument): Dieta {
+    // Converte planos de refeições do documento para entidades
+    const planosRefeicao: PlanoRefeicao[] | undefined = doc.planosRefeicao?.map(
+      (planoDoc) => {
+        const refeicoes: Refeicao[] = planoDoc.refeicoes.map((refeicaoDoc) => {
+          const alimentos: AlimentoRefeicao[] = refeicaoDoc.alimentos.map(
+            (alimentoDoc) =>
+              new AlimentoRefeicao(
+                alimentoDoc.idAlimento,
+                alimentoDoc.quantidade,
+                alimentoDoc.nomeAlimento
+              )
+          )
+          return new Refeicao(
+            refeicaoDoc.id,
+            refeicaoDoc.nome,
+            alimentos,
+            refeicaoDoc.observacao
+          )
+        })
+        return new PlanoRefeicao(planoDoc.id, planoDoc.diaSemana, refeicoes)
+      }
+    )
+
     return new Dieta(
       doc._id,
       doc.idNutricionista,
@@ -88,7 +166,8 @@ export class DietaRepository implements IDietaRepository {
       doc.dataInicio,
       doc.dataFim,
       doc.descricao,
-      doc.observacoes
+      doc.observacoes,
+      planosRefeicao
     )
   }
 }

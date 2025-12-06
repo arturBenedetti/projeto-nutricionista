@@ -6,12 +6,61 @@
   "scripts": {
     "build": "cd ../backend && tsc",
     "start": "npm run build && electron .",
-    "dev": "concurrently \"cd ../backend && tsc --watch\" \"electron .\""
+    "dev": "concurrently \"cd ../backend && tsc --watch\" \"electron .\"",
+    "build:frontend": "cd ../frontend && npm run build",
+    "build:backend": "cd ../backend && npm run build",
+    "dist": "npm run build:backend && npm run build:frontend && electron-builder",
+    "dist:win": "npm run build:backend && npm run build:frontend && electron-builder --win",
+    "dist:linux": "npm run build:backend && npm run build:frontend && electron-builder --linux",
+    "dist:mac": "npm run build:backend && npm run build:frontend && electron-builder --mac"
+  },
+  "build": {
+    "appId": "com.nutricionista.app",
+    "productName": "NutriLife",
+    "directories": {
+      "output": "dist-installer",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.cjs",
+      "preload.js",
+      "../backend/dist/**/*",
+      "../frontend/dist/**/*",
+      "!../backend/src/**/*",
+      "!../frontend/src/**/*",
+      "!../backend/node_modules/**/*",
+      "!../frontend/node_modules/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "../frontend/src/assets/caduceu.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "linux": {
+      "target": ["AppImage", "deb"],
+      "icon": "../frontend/src/assets/caduceu.png"
+    },
+    "mac": {
+      "target": ["dmg"],
+      "icon": "../frontend/src/assets/caduceu.png",
+      "category": "public.app-category.healthcare-fitness"
+    }
   },
   "devDependencies": {
     "@types/node": "^20.12.12",
     "concurrently": "^9.2.1",
     "electron": "^38.1.0",
+    "electron-builder": "^24.9.1",
     "typescript": "^5.6.3"
   },
   "dependencies": {

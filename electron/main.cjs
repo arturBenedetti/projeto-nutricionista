@@ -62,6 +62,14 @@ const {
 } = require("../backend/dist/application/controllers/DietaController")
 const { dietaIPC } = require("../backend/dist/application/ipc/DietaIPC")
 
+const {
+  AlimentoRepository,
+} = require("../backend/dist/infrastructure/repositories/AlimentoRepository")
+const {
+  AlimentoController,
+} = require("../backend/dist/application/controllers/AlimentoController")
+const { alimentoIPC } = require("../backend/dist/application/ipc/AlimentoIPC")
+
 require("electron-reload")(__dirname, {
   electron: require(`${__dirname}/node_modules/electron`),
 })
@@ -78,6 +86,7 @@ async function createWindow() {
     width: savedState?.bounds?.width ?? 1280,
     height: savedState?.bounds?.height ?? 720,
     resizable: true,
+    icon: path.join(__dirname, "../frontend/src/assets/caduceu.png"),
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
@@ -87,6 +96,15 @@ async function createWindow() {
 
   // Configura backend
   const db = await connectMongo()
+
+  // Importa dados TACO automaticamente se ainda não existirem
+  try {
+    const { importarTaco } = require("../backend/dist/scripts/importarTaco");
+    await importarTaco(db, true); // silent = true para não poluir o console
+  } catch (error) {
+    // Log do erro mas não impede o sistema de iniciar
+    console.error("Erro ao verificar/importar dados TACO:", error.message);
+  }
 
   const userRepo = new UsuarioRepository(db)    
   const usuarioService = new UsuarioService(userRepo);
@@ -101,15 +119,26 @@ async function createWindow() {
     usuarioService
   );
   const dietaRepo = new DietaRepository(db)
-  const dietaController = new DietaController(dietaRepo)
+  const dietaController = new DietaController(dietaRepo, pacienteRepo)
+
+  const alimentoRepo = new AlimentoRepository(db)
+  const alimentoController = new AlimentoController(alimentoRepo)
 
   // Registra IPCs
   registerUserIPC(userController)
   loginIPC(loginController)
   pacienteIPC(pacienteController)
   dietaIPC(dietaController)
+  alimentoIPC(alimentoController)
 
+
+  const isDev = process.env.NODE_ENV !== 'production';
+
+if (isDev) {
   mainWindow.loadURL("http://localhost:5173");
+} else {
+  mainWindow.loadFile(path.join(__dirname, "../frontend/dist/index.html"));
+}
 
   if (!savedState) {
     mainWindow.maximize();

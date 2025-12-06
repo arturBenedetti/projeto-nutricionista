@@ -6,6 +6,7 @@ import TelaHome from "./view/telas/TelaHome.vue"
 import TelaPacientes from "./view/Telas/TelaPacientes.vue"
 import TelaDadosPaciente from "./view/telas/TelaDadosPaciente.vue"
 import TelaDietas from "./view/telas/TelaDietas.vue"
+import TelaMinhaDieta from "./view/telas/TelaMinhaDieta.vue"
 import { getLoggedUser, isAuthenticated, logout } from "./services/UsuarioService"
 import { AuthService } from "./services/AuthService"
 
@@ -34,6 +35,11 @@ const routes = [
         path: "/dados-paciente",
         name: "dados-paciente",
         component: TelaDadosPaciente,
+      },
+      {
+        path: "/minha-dieta",
+        name: "minha-dieta",
+        component: TelaMinhaDieta,
       },
       { path: "/dietas", name: "dietas", component: TelaDietas },
     ],

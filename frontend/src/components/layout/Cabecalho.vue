@@ -1,7 +1,7 @@
 <template>
   <div>
     <header class="header">
-      <h1>Projeto Nutricionista</h1>
+      <h1>NutriLife</h1>
       <div class="user-section">
         <DropdownMenu class="user-dropdown">
           <template #trigger>

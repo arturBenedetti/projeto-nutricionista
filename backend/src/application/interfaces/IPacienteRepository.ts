@@ -1,4 +1,5 @@
 import { Paciente } from "../../domain/entities/Paciente";
+import { EvolutionImagesModel } from "../../domain/models/EvolutionImagesModel";
 
 export interface IPacienteRepository {
   save(Paciente: Paciente): Promise<Paciente>;

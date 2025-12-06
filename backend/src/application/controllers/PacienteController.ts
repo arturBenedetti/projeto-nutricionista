@@ -13,6 +13,12 @@ import { ConsultarPacienteDTO } from "../dtos/ConsultaPacienteDTO";
 import { ConsultarPacienteResponseDTO } from "../dtos/ConsultarPacienteResponseDTO";
 import { ExcluirPacienteDTO } from "../dtos/ExcluirPacienteDTO";
 import { IUsuarioService } from "../../domain/services/IUsuarioService";
+import { AdicionarImagemEvolucaoUseCase } from "../../domain/useCases/AdicionarImagemEvolucaoUseCase";
+import { ListarImagensEvolucaoUseCase } from "../../domain/useCases/ListarImagensEvolucaoUseCase";
+import { ExcluirImagemEvolucaoUseCase } from "../../domain/useCases/ExcluirImagemEvolucaoUseCase";
+import { UploadImagemDTO } from "../dtos/UploadImagemDTO";
+import { ListarImagensDTO } from "../dtos/ListarImagensDTO";
+import { ExcluirImagemDTO } from "../dtos/ExcluirImagemDTO";
 
 export class PacienteController {
   private createPacienteUseCase: CreatePacienteUseCase;
@@ -20,6 +26,9 @@ export class PacienteController {
   private listPacientesUseCase: ListPacientesUseCase;
   private getDadosPacienteUseCase: GetDadosPacienteUseCase;
   private excluirPacienteUseCase: ExcluirPacienteUseCase;
+  private adicionarImagemUseCase: AdicionarImagemEvolucaoUseCase;
+  private listarImagensUseCase: ListarImagensEvolucaoUseCase;
+  private excluirImagemUseCase: ExcluirImagemEvolucaoUseCase;
 
   constructor(
     pacienteRepo: IPacienteRepository,
@@ -33,6 +42,9 @@ export class PacienteController {
     this.listPacientesUseCase = new ListPacientesUseCase(pacienteRepo);
     this.getDadosPacienteUseCase = new GetDadosPacienteUseCase(pacienteRepo);
     this.excluirPacienteUseCase = new ExcluirPacienteUseCase(pacienteRepo);
+    this.adicionarImagemUseCase = new AdicionarImagemEvolucaoUseCase(pacienteRepo);
+    this.listarImagensUseCase = new ListarImagensEvolucaoUseCase(pacienteRepo);
+    this.excluirImagemUseCase = new ExcluirImagemEvolucaoUseCase(pacienteRepo);
   }
 
   async criarPaciente(
@@ -60,5 +72,17 @@ export class PacienteController {
 
   async excluirPaciente(dto: ExcluirPacienteDTO): Promise<boolean> {
     return await this.excluirPacienteUseCase.excluirPaciente(dto);
+  }
+
+  async uploadImagem(dto: UploadImagemDTO): Promise<boolean> {
+    return await this.adicionarImagemUseCase.adicionarImagem(dto);
+  }
+
+  async listarImagens(dto: ListarImagensDTO) {
+    return await this.listarImagensUseCase.listarImagens(dto);
+  }
+
+  async excluirImagem(dto: ExcluirImagemDTO): Promise<boolean> {
+    return await this.excluirImagemUseCase.excluirImagem(dto);
   }
 }
