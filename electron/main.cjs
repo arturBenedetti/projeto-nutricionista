@@ -131,7 +131,14 @@ async function createWindow() {
   dietaIPC(dietaController)
   alimentoIPC(alimentoController)
 
+
+  const isDev = process.env.NODE_ENV !== 'production';
+
+if (isDev) {
   mainWindow.loadURL("http://localhost:5173");
+} else {
+  mainWindow.loadFile(path.join(__dirname, "../frontend/dist/index.html"));
+}
 
   if (!savedState) {
     mainWindow.maximize();

@@ -7,7 +7,8 @@
   "scripts": {
     "dev:vite": "vite",
     "dev:electron": "wait-on http://localhost:5173 && cd ../electron && npm start",
-    "dev": "concurrently \"npm run dev:vite\" \"npm run dev:electron\""
+    "dev": "concurrently \"npm run dev:vite\" \"npm run dev:electron\"",
+    "build": "vite build"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.14",
